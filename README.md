@@ -60,5 +60,5 @@ All contribution are welcome!
 
 ## About
 
-[Fouita : UI framework for svelte + tailwind components](fouita.com)
+[Fouita : UI framework for svelte + tailwind components](https://fouita.com)
 
