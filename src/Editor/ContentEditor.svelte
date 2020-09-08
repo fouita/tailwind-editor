@@ -8,7 +8,7 @@
 	export let html = ''
 	export let gklass = ''
 	
-	function generateArr(){
+	async function generateArr(){
 		let div = document.createElement('div')
 		div.innerHTML = html
 		
@@ -19,6 +19,8 @@
 				n_elms.push({tag: 'BR',txt: ""})
 			else if(elm.nodeName == 'A')
 				n_elms.push({tag: 'A',txt: elm.textContent, href: elm.getAttribute('href'), klass: elm.classList&&[...elm.classList].join(' ')})
+			else if(elm.nodeName == 'IMG')
+				n_elms.push({tag: 'IMG',txt: elm.getAttribute('alt'), href: elm.getAttribute('src'), klass: elm.classList&&[...elm.classList].join(' ')})
 			else if(elm.nodeName !== '#text')
 				n_elms.push({txt: elm.innerText, klass: elm.classList&&[...elm.classList].join(' ')})
 			else if(elm.nodeName == '#text' && elm.length>0 ){
@@ -28,6 +30,8 @@
 		}
 		
 		arr_elms = n_elms
+		await tick()
+		refreshEvents()
 	}
 
 	// workaround in case using sapper!
@@ -99,7 +103,7 @@
 
 		// back key
 		if(e.keyCode == 8){
-			if(start_i==0 && b_index==0 || b_index == -1){
+			if(start_i==0 && (b_index==0 || b_index == -1)){
 				let l_node_index 
 				let l_node_end 
 				let pv_elm = elm_node.previousElementSibling
@@ -130,7 +134,7 @@
 			let elm_html = ''
 			let next_html = ''
 			let elm_index = b_index==-1 ? arr_elms.length-1 : b_index
-			if(arr_elms.length>0){
+			if(arr_elms.length>0 && ~b_index){
 				
 				let n_arr = splitArr(arr_elms,elm_index,start_i)
 				arr_elms.splice(elm_index,1,...n_arr)
@@ -139,7 +143,12 @@
 				elm_html = extractHTML(arr_elms.slice(0, s_index))
 				next_html = extractHTML(arr_elms.slice(s_index, arr_elms.length))
 			}
+			if(!~b_index){
+				elm_html = extractHTML(arr_elms)
+			}
 			dispatch('enter',{html: elm_html, next_html, klass: gklass})
+			// console.log("ELM HTML ", elm_html)
+			// console.log("Next HTML ", next_html)
 			e.preventDefault()
 			return false
 		}
@@ -196,6 +205,8 @@
 				str += '<br>'
 			}else if(elm.tag == 'A'){
 				str += `<a href=${elm.href} target='_blank' class="${elm.klass}">${elm_txt}</a>`
+			}else if(elm.tag == 'IMG'){
+				str += `<img src=${elm.href} class="${elm.klass}" alt=${elm_txt} />`
 			}else if(elm.klass){
 				str += `<span class="${elm.klass}">${elm_txt}</span>`
 			}else{
@@ -208,7 +219,14 @@
 	function refresh(){
 
 		html = extractHTML(arr_elms)
+	}
 
+	function refreshEvents(){
+		[...edit_node.childNodes].forEach((ch,i) => {
+			if(ch.nodeName == 'IMG'){
+				ch.addEventListener('click', (e)=> editMedia(e.currentTarget,i))
+			}
+		})
 	}
 
 	let h_selection = null
@@ -459,8 +477,10 @@
 						elm.tag = 'A'
 						elm.href = link
 				}
+				
 				if(!elm.klass || !elm.klass.includes(klass)){
 					elm.klass = elm.klass ? elm.klass.split(' ').concat([klass]).join(' ') : klass
+					elm.tag = elm.tag
 				}
 			}
 		}else{
@@ -469,7 +489,7 @@
 					elm.tag = 'A'
 					elm.href = link
 				}
-				if(!link && elm.klass && elm.klass.includes('link')){
+				if(!link && elm.tag != 'IMG' && elm.klass && elm.klass.includes('link')){
 					delete elm.href
 					delete elm.tag
 				}
@@ -510,7 +530,7 @@
 	function getIndex(node){
 		let p_node = node
 		if(node.nodeName == 'DIV') return -1
-		if(['SPAN','BR','A'].includes(node.parentNode.tagName)){
+		if(['SPAN','A'].includes(node.parentNode.tagName)){
 			p_node = node.parentNode
 		}
 		return [...p_node.parentNode.childNodes].filter(n => n.nodeName!='#text' || n.length>0).indexOf(p_node)
@@ -567,22 +587,45 @@
 		return href
 	}
 	
+	// embed image or video!
+	function embedElement(e,b_node,b_index){
+		//TODO key code is not up/down/left/right
+		let src = b_node.textContent.split(' ').pop()
+		if(src && /^https?:\/\/.*\.(gif|jpe?g|tiff?|png|webp|bmp)$/i.test(src.trim())){
+			dispatch('set_media', {setMedia: (img) => setImg(img.klass,img.alt,src,b_index), base_node: b_node})
+		}
+	}
+
+	function updateMedia(){
+		console.log("Update media !!! ")
+	}
+
+	function editMedia(b_node, i){
+		let elm = arr_elms[i]
+		dispatch('set_media',  {setMedia: (img) => setImg(img.klass,img.alt,img.src,i), base_node: b_node, src: elm.href, klass: elm.klass, alt: elm.txt})
+	}
+
+	function setImg(klass,alt,src,b_index){
+		arr_elms[b_index] = {tag: 'IMG', href: src, txt: alt, klass}
+		refresh()
+	}
 	
 	let l_selected = ''
-	async function fireSelect(e){
+	function fireSelect(e){
 		
 		let selection = window.getSelection() 
 		let selection_txt = selection.toString()
 		let b_node = selection.baseNode
 		let e_node = selection.extentNode
+		let b_index = getIndex(b_node)
+		let e_index = getIndex(e_node)
+
 		if(b_node.nodeName == 'DIV' || e_node.nodeName == 'DIV'){
 			hideSelect()
 			return
 		}
 		h_selection = null
 		if(selection_txt){				
-			let b_index = getIndex(b_node)
-			let e_index = getIndex(e_node)
 			let base_node = b_index < e_index ? b_node : e_node
 			holdSelection(selection)
 			// extract classes to pass them to the toolbar!
@@ -590,6 +633,7 @@
 			let href = extractLink(b_index,e_index)
 			dispatch('select',{setClass, setGClass, base_node: b_node, classes, g_classes: gklass, href})
 		}else{
+			embedElement(e,b_node,b_index)
 			hideSelect()
 
 		}
@@ -601,6 +645,10 @@
 		dispatch('hideselect')
 	}
 
+	let edit_node 
+	function setEditorNode(node){
+		edit_node = node
+	}
 </script>
 
 <style>
@@ -612,7 +660,7 @@
 	}
 </style>
 
-<div bind:innerHTML={html} placeholder='' spellcheck="false" contenteditable="true" on:keydown={handleKeydown}  class="focus:outline-none relative {gklass}" on:mouseup={fireSelect} on:keyup={fireSelect}  >
+<div use:setEditorNode bind:innerHTML={html} placeholder='' spellcheck="false" contenteditable="true" on:keydown={handleKeydown}  class="focus:outline-none relative {gklass}" on:mouseup={fireSelect} on:keyup={fireSelect}  >
 	
 </div>
 					  
