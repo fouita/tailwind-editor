@@ -69,7 +69,7 @@
 
 		// up key
 		if(e.keyCode == 38){ 
-			if (b_node == e_node && start_i == 0 && (b_index <= 1)){
+			if (b_node == e_node && start_i == 0 && (b_index <= 0)){
 				// move to the previous node
 				let pv_elm = elm_node.previousElementSibling
 				if(pv_elm && pv_elm.isContentEditable){
@@ -146,9 +146,7 @@
 			if(!~b_index){
 				elm_html = extractHTML(arr_elms)
 			}
-			dispatch('enter',{html: elm_html, next_html, klass: gklass})
-			// console.log("ELM HTML ", elm_html)
-			// console.log("Next HTML ", next_html)
+			dispatch('enter',{html: elm_html.trim(), next_html: next_html.trim(), klass: gklass})
 			e.preventDefault()
 			return false
 		}
@@ -216,8 +214,7 @@
 		return str
 	}
 
-	function refresh(){
-
+	function refresh(){	
 		html = extractHTML(arr_elms)
 	}
 

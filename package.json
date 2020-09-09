@@ -21,5 +21,18 @@
   "files": [
     "src",
     "dist"
-  ]
+  ],
+  "description": "Svelte component to generate tailwindcss html from a notion like wysiwyg editor.",
+  "version": "0.0.2",
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fouita/tailwind-editor.git"
+  },
+  "author": "fouita",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/fouita/tailwind-editor/issues"
+  },
+  "homepage": "https://github.com/fouita/tailwind-editor#readme"
 }
