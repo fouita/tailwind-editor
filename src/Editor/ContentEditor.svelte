@@ -101,6 +101,37 @@
 			}
 		}
 
+		// del key
+		if(e.keyCode == 46){
+			let elms = arr_elms.length && arr_elms[arr_elms.length-1].tag == 'BR' ? arr_elms.slice(0,arr_elms.length-1) : arr_elms
+			if((!~b_index && !elms.length) || (b_index == elms.length-1 && start_i == elms[elms.length-1].txt.length)){
+				let l_node_index 
+				let l_node_end 
+				let pv_elm = elm_node
+				if(pv_elm && pv_elm.isContentEditable){
+					if(!pv_elm.childNodes.length)
+						pv_elm.focus()
+					else{
+						l_node_index = pv_elm.childNodes.length-1
+						l_node_end = pv_elm.childNodes[pv_elm.childNodes.length-1].textContent.length
+					} 
+				}	
+				
+				dispatch('merge_next')
+				e.preventDefault()
+
+				await (new Promise(r => setTimeout(r)))
+				if(l_node_index !== undefined){
+					let l_node = pv_elm.childNodes[l_node_index]
+					if(l_node.nodeName !== '#text' && l_node.nodeName !== 'BR'){
+							l_node = l_node.childNodes[0]
+					}
+					selection.setBaseAndExtent(l_node, l_node_end, l_node, l_node_end);
+				}
+				return
+			}
+		}
+
 		// back key
 		if(e.keyCode == 8){
 			if(start_i==0 && (b_index==0 || b_index == -1)){
@@ -115,7 +146,7 @@
 						l_node_end = pv_elm.childNodes[pv_elm.childNodes.length-1].textContent.length
 					} 
 				}	
-				
+				e.preventDefault()
 				dispatch('merge_prev', html)
 				await (new Promise(r => setTimeout(r)))
 				if(l_node_index !== undefined){
@@ -125,7 +156,6 @@
 					}
 					selection.setBaseAndExtent(l_node, l_node_end, l_node, l_node_end);
 				}
-				e.preventDefault()
 			}
 		}
 		

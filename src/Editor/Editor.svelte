@@ -61,6 +61,16 @@
       arr_html = arr_html;
     }
   }
+  
+  function mergeNext(evt, i) {
+    if (i+1 < arr_html.length) {
+      arr_html[i].html += arr_html[i+1].html;
+      arr_html.splice(i+1, 1);
+      arr_html = arr_html;
+    }
+  }
+
+  
 
   let setMedia 
   let show_media = false
@@ -106,6 +116,7 @@
       bind:gklass={h.klass}
       on:enter={evt => addNewElm(i, evt)}
       on:merge_prev={evt => mergePrev(evt, i)}
+      on:merge_next={evt => mergeNext(evt, i)}
       on:select={showToolBar}
       on:hideselect={hideSelect}
 	  on:set_media={setMediaInfo}
