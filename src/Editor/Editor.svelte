@@ -21,8 +21,10 @@
     );
     // auto focus
     arr_html = arr_html;
-    await new Promise(r => setTimeout(r));
-    list_editors.children[i + 1].focus();
+	await new Promise(r => setTimeout(r));
+	// find next div index in cildren
+	let div_editors = [...list_editors.children].filter(e => e.tagName == 'DIV')
+    div_editors[i + 1].focus();
   }
 
   let list_editors;

@@ -72,6 +72,10 @@
 			if (b_node == e_node && start_i == 0 && (b_index <= 0)){
 				// move to the previous node
 				let pv_elm = elm_node.previousElementSibling
+				// TODO - fix workaround
+				if(pv_elm && !pv_elm.isContentEditable)
+					pv_elm = pv_elm.previousElementSibling
+
 				if(pv_elm && pv_elm.isContentEditable){
 					pv_elm.focus()
 					e.preventDefault()
@@ -92,6 +96,10 @@
 			if (b_node == e_node){
 				if(b_index == arr_elms.length-1 || (b_index == arr_elms.length-2 && arr_elms[arr_elms.length-1].tag == 'BR') || b_node == elm_node){
 					let next_elm = elm_node.nextElementSibling
+					// TODO - fix workaround
+					if(next_elm && !next_elm.isContentEditable)
+						next_elm = next_elm.nextElementSibling
+
 					if(next_elm && next_elm.isContentEditable){
 						next_elm.focus()
 						e.preventDefault()
@@ -138,9 +146,14 @@
 				let l_node_index 
 				let l_node_end 
 				let pv_elm = elm_node.previousElementSibling
+				// STEP to skip grammarly (woraround for now!) -- TODO - fix
+				if(pv_elm && !pv_elm.isContentEditable)
+					pv_elm = pv_elm.previousElementSibling
+				
 				if(pv_elm && pv_elm.isContentEditable){
-					if(!pv_elm.childNodes.length)
+					if(!pv_elm.childNodes.length){
 						pv_elm.focus()
+					}
 					else{
 						l_node_index = pv_elm.childNodes.length-1
 						l_node_end = pv_elm.childNodes[pv_elm.childNodes.length-1].textContent.length

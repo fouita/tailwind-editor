@@ -16,6 +16,8 @@
   "keywords": [
     "svelte",
     "tailwind",
+    "wysiwyg",
+    "editor",
     "fouita"
   ],
   "files": [
@@ -23,7 +25,7 @@
     "dist"
   ],
   "description": "Svelte component to generate tailwindcss html from a notion like wysiwyg editor.",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "dependencies": {},
   "repository": {
     "type": "git",
