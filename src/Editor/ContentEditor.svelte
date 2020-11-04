@@ -56,8 +56,8 @@
 			return
 		}
 		let selection = window.getSelection()
-		let b_node = selection.baseNode
-		let e_node = selection.extentNode
+		let b_node = selection.anchorNode
+		let e_node = selection.focusNode
 		let start_i = selection.baseOffset
 		let end_i = selection.extentOffset
 		let elm_node = (b_node.tagName&&b_node.tagName=='DIV') ? b_node : b_node.parentNode.tagName == 'DIV' ? b_node.parentNode : b_node.parentNode.parentNode
@@ -112,7 +112,7 @@
 		// del key
 		if(e.keyCode == 46){
 			let elms = arr_elms.length && arr_elms[arr_elms.length-1].tag == 'BR' ? arr_elms.slice(0,arr_elms.length-1) : arr_elms
-			if((!~b_index && !elms.length) || (b_index == elms.length-1 && start_i == elms[elms.length-1].txt.length)){
+			if((!~b_index && !elms.length) || (b_index == elms.length-1 && start_i == elms[elms.length-1].txt.length && !selection.toString())){
 				let l_node_index 
 				let l_node_end 
 				let pv_elm = elm_node
@@ -277,8 +277,8 @@
 			start_i: selection.baseOffset ,
 			end_i: selection.extentOffset ,
 			
-			b_node: selection.baseNode,
-			e_node: selection.extentNode
+			b_node: selection.anchorNode,
+			e_node: selection.focusNode
 		}
 	}
 	
@@ -292,8 +292,8 @@
 		let	start_i = h_selection ? h_selection.start_i : selection.baseOffset 
 		let end_i = h_selection ? h_selection.end_i : selection.extentOffset 
 		
-		let b_node = h_selection ? h_selection.b_node : selection.baseNode
-		let e_node = h_selection ? h_selection.e_node : selection.extentNode
+		let b_node = h_selection ? h_selection.b_node : selection.anchorNode
+		let e_node = h_selection ? h_selection.e_node : selection.focusNode
 		
 		let b_index = getIndex(b_node)
 		let e_index = getIndex(e_node)
@@ -653,10 +653,12 @@
 	let l_selected = ''
 	function fireSelect(e){
 		
+		 
 		let selection = window.getSelection() 
+		console.log("SELECTION... ", selection)
 		let selection_txt = selection.toString()
-		let b_node = selection.baseNode
-		let e_node = selection.extentNode
+		let b_node = selection.anchorNode
+		let e_node = selection.focusNode
 		let b_index = getIndex(b_node)
 		let e_index = getIndex(e_node)
 
