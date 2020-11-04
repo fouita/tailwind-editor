@@ -655,7 +655,6 @@
 		
 		 
 		let selection = window.getSelection() 
-		console.log("SELECTION... ", selection)
 		let selection_txt = selection.toString()
 		let b_node = selection.anchorNode
 		let e_node = selection.focusNode
