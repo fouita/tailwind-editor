@@ -501,8 +501,8 @@
 	let g_reg_txt_size = /text\-(sm|base|xl|3xl|4xl)/
 	let reg_leading = /^leading\-(none|tight|snug|normal|relaxed|loose)/
 	let reg_position = /^text\-(left|right|center)/
-	let reg_txt_color = /^text\-(gray|red|orange|yellow|green|blue|indigo|purple|pink)/
-	let reg_bg_color = /^bg\-(gray|red|orange|yellow|green|blue|indigo|purple|pink)/
+	let reg_txt_color = /^text\-(teal|gray|red|orange|yellow|green|blue|indigo|purple|pink|white|black)/
+	let reg_bg_color = /^bg\-(teal|gray|red|orange|yellow|green|blue|indigo|purple|pink|white|black)/
 	
 	function toggleClass(arr, klass, link){
 
