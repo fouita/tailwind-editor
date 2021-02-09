@@ -7,6 +7,7 @@
 	
 	export let html = ''
 	export let gklass = ''
+	export let editable = true
 	
 	async function generateArr(){
 		let div = document.createElement('div')
@@ -705,8 +706,12 @@
 		background-color: transparent;
 	}
 </style>
-
-<div use:setEditorNode on:mousemove={setMouseX} on:mouseup|stopPropagation bind:innerHTML={html} placeholder='' spellcheck="false" contenteditable="true" on:keydown={handleKeydown}  class="focus:outline-none relative {gklass}" on:mouseup={fireSelect} on:keyup={fireSelect}  >
-	
-</div>
+{#if editable}
+	<div use:setEditorNode on:mousemove={setMouseX} on:mouseup|stopPropagation bind:innerHTML={html} placeholder='' spellcheck="false" contenteditable="true" on:keydown={handleKeydown}  class="focus:outline-none relative {gklass}" on:mouseup={fireSelect} on:keyup={fireSelect}  >
+	</div>
+{:else}
+	<div class="relative {gklass}">
+		{@html html}
+	</div>
+{/if}
 					  

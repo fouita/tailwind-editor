@@ -5,7 +5,7 @@
   import { tick } from "svelte/internal";
 
   export let arr_html = [{ html: ``, klass: "p-2" }];
-
+  export let editable = true
   export let html = "";
 
   $: html = arr_html
@@ -100,7 +100,7 @@
 
 <svelte:window on:mouseup={hideSelect} />
 
-{#if show_toolbar}
+{#if show_toolbar && editable}
   <ToolBar
     {setGClass}
     {setClass}
@@ -112,13 +112,14 @@
     on:close={hideSelect} />
 {/if}
 
-{#if show_media}
+{#if show_media && editable}
 	<MediaInput setMedia={addMedia} cancel={() => show_media= false} {base_node} {...img_props} />
 {/if}
 
 <div use:setListEditors>
   {#each arr_html as h, i}
     <ContentEditor
+      {editable}
       bind:html={h.html}
       bind:gklass={h.klass}
       on:enter={evt => addNewElm(i, evt)}
