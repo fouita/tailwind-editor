@@ -1,5 +1,4 @@
 <script>				
-	import {fly} from 'svelte/transition'
 	import { createEventDispatcher} from 'svelte/internal'
 
 	import ColorPicker from './ColorPicker.svelte'
@@ -21,14 +20,25 @@
 	// export let setLink
 	export let base_node
 	let dispatch = createEventDispatcher()
+	export let mouseX
 	
+	function firstParentRelative(n){
+		while(n.parentNode && n.parentNode.tagName){
+			n = n.parentNode
+			if(window.getComputedStyle(n).getPropertyValue('position').toLowerCase() == 'relative'){
+				return n.getBoundingClientRect()
+			}
+		}
+		return {top: -window.scrollY, left: 0}
+	}
+
 	function setPosition(node){
 		let e = window.event;
 		if(!base_node) return
 		
 		let elm = base_node.parentNode.tagName == 'DIV' ? base_node : base_node.parentNode
 		let rect = elm.parentNode.getBoundingClientRect()
-		let posY = rect.top; 
+		let posY = rect.top-10; 
 		if(elm.previousElementSibling){
 			let ch_nodes = [...elm.parentNode.childNodes]
 			let siblings = ch_nodes.slice(0,ch_nodes.indexOf(elm)+1)
@@ -38,7 +48,14 @@
 				posY = rect.top ? rect.top : posY
 			}
 		}
-		node.style.top = `${posY+window.scrollY}px`
+
+		let rel_rect = firstParentRelative(node)
+		node.style.top = `${posY-rel_rect.top}px`
+		mouseX = mouseX || 10
+		let mx = mouseX-node.offsetWidth/2 
+		mx = mx > 0 ? mx : 10
+		mx = mouseX+node.offsetWidth/2 < window.innerWidth ? mx : window.innerWidth-node.offsetWidth
+		node.style.left = `${mx-rel_rect.left}px`
 	}
 
 	function close(){
@@ -49,7 +66,6 @@
 		return classes.includes(klass)
 	}
 	function cgexist(klass){
-		// console.log("G --> ", g_classes, " k --> ", klass)
 		return g_classes.includes(klass)
 	}
 
@@ -133,7 +149,7 @@
 	
 </script>
 
-<div use:setPosition in:fly class="flex absolute -mt-6 shadow bg-white z-20">	
+<div use:setPosition on:mouseup|stopPropagation class="flex absolute -mt-6 shadow bg-white z-50 text-base rounded">	
 	<div class="rounded flex items-center shadow-lg border border-gray-200  text-gray-700">
 			<div class="border-r">
 				<HeadingList setClass={setGClass} klass={g_classes} />	

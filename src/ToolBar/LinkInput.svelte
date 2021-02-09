@@ -1,5 +1,4 @@
 <script>
-  import { fly } from "svelte/transition";
   export let href;
   let show_link = false;
   export let setLink;
@@ -34,7 +33,6 @@
   </span>
   {#if show_link}
     <div
-      transition:fly
       class="absolute p-3 shadow-xl flex rounded bg-white -ml-24 mt-1 z-20"
       on:click={stop}>
       <input

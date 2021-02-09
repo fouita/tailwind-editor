@@ -650,6 +650,11 @@
 		refresh()
 	}
 	
+	let mouseX
+	function setMouseX(e){
+		mouseX = e.clientX
+	} 
+
 	let l_selected = ''
 	function fireSelect(e){
 		
@@ -672,7 +677,7 @@
 			// extract classes to pass them to the toolbar!
 			let classes = extractClasses(b_index,e_index)
 			let href = extractLink(b_index,e_index)
-			dispatch('select',{setClass, setGClass, base_node: b_node, classes, g_classes: gklass, href})
+			dispatch('select',{setClass, setGClass, base_node: b_node, classes, g_classes: gklass, href, mouseX})
 		}else{
 			embedElement(e,b_node,b_index)
 			hideSelect()
@@ -701,7 +706,7 @@
 	}
 </style>
 
-<div use:setEditorNode bind:innerHTML={html} placeholder='' spellcheck="false" contenteditable="true" on:keydown={handleKeydown}  class="focus:outline-none relative {gklass}" on:mouseup={fireSelect} on:keyup={fireSelect}  >
+<div use:setEditorNode on:mousemove={setMouseX} on:mouseup|stopPropagation bind:innerHTML={html} placeholder='' spellcheck="false" contenteditable="true" on:keydown={handleKeydown}  class="focus:outline-none relative {gklass}" on:mouseup={fireSelect} on:keyup={fireSelect}  >
 	
 </div>
 					  

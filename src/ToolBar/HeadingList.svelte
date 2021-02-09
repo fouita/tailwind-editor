@@ -57,7 +57,7 @@
 
 <div class="flex h-full">
 	<DropDown {list} bind:open={open} selected={selected_val} on:select={selectClass} class="w-32">
-		<div class="pl-2 pr-3 py-1 h-full flex items-center">
+		<div class="pl-2 pr-3 py-1 h-full flex items-center whitespace-nowrap flex-shrink-0">
 			{selected_label} <DownIcon />
 		</div>
 	</DropDown>

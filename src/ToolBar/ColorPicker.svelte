@@ -1,5 +1,4 @@
 <script>
-	import {fly} from 'svelte/transition'
 	import ColorList from './ColorList.svelte'
 	import DownIcon from '../Icons/DownIcon.svelte'
 	
@@ -44,7 +43,7 @@
 		<span class="">A</span> <DownIcon />
 	</div>
 	{#if show_colors}
-		<div transition:fly class="absolute top-0 left-0 mt-8 z-20">	
+		<div class="absolute top-0 left-0 mt-8 z-20 bg-white">	
 			<ColorList selected_color={selected_color} on:select={selectColor} />
 		</div>
 	{/if}

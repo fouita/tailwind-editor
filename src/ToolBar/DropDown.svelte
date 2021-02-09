@@ -1,7 +1,6 @@
 <script>
 	// import {createEventDispatcher} from 'svelte/internal'
 	import List from './List.svelte'
-	import {fly} from 'svelte/transition'
 	let klass = ''
 	export let open = false
 	export {klass as class}
@@ -53,7 +52,7 @@
 		<slot>Click To show</slot>
 	</div>
 	{#if open}
-	<div transition:fly class="absolute -ml-1 z-20 {klass}">
+	<div class="absolute -ml-1 z-20 {klass}">
 		<List {list} {selected} on:select />
 	</div>
 	{/if}

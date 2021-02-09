@@ -40,6 +40,7 @@
   let classes;
   let g_classes;
   let href;
+  let mouseX;
 
   function showToolBar(evt) {
     base_node = evt.detail.base_node;
@@ -50,6 +51,7 @@
     classes = evt.detail.classes;
     g_classes = evt.detail.g_classes;
     href = evt.detail.href;
+    mouseX = evt.detail.mouseX;
   }
 
   function hideSelect() {
@@ -96,6 +98,8 @@
 
 </script>
 
+<svelte:window on:mouseup={hideSelect} />
+
 {#if show_toolbar}
   <ToolBar
     {setGClass}
@@ -104,6 +108,7 @@
     {g_classes}
     {classes}
     {href}
+    {mouseX}
     on:close={hideSelect} />
 {/if}
 

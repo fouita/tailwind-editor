@@ -1,5 +1,4 @@
 <script>
-	import {fly} from 'svelte/transition'
     export let alt 
     export let src 
     export let klass = ''
@@ -42,7 +41,7 @@
 
 
 
-<div use:setPosition transition:fly class="absolute -mt-6 p-3 shadow-xl flex flex-col rounded bg-white z-20">
+<div use:setPosition class="absolute -mt-6 p-3 shadow-xl flex flex-col rounded bg-white z-20">
     {#if src}
         <input type="text" bind:value={src} placeholder="Image src" class="bg-gray-100 text-sm font-mono mb-2 border p-1 w-64 rounded focus:outline-none shadow-inner" >
     {/if}
