@@ -3,16 +3,23 @@
   import ToolBar from "../ToolBar/ToolBar.svelte";
   import MediaInput from "../ToolBar/MediaInput.svelte";
   import { tick } from "svelte/internal";
+  import {createEventDispatcher} from 'svelte'
+
+  const dispatch = createEventDispatcher()
 
   export let arr_html = [{ html: ``, klass: "p-2" }];
-  export let editable = true
+  export let editable = false
   export let html = "";
+  export let uid = null;
 
   $: html = arr_html
     .map(h => `<div class='${h.klass}'>${h.html}</div>`)
     .join("\n");
   async function addNewElm(i, evt) {
     // split
+    // get element index
+    let target = evt.detail.target
+    let index = [...target.parentNode.children].indexOf(target)
     arr_html.splice(
       i,
       1,
@@ -21,10 +28,16 @@
     );
     // auto focus
     arr_html = arr_html;
-	await new Promise(r => setTimeout(r));
-	// find next div index in cildren
-	let div_editors = [...list_editors.children].filter(e => e.tagName == 'DIV')
-    div_editors[i + 1].focus();
+	  await new Promise(r => setTimeout(r));
+	  // find next div index in cildren
+	  let div_editors = [...list_editors.children].filter(e => e.tagName == 'DIV')
+    // next element
+    let j= 1;
+    while(!div_editors[index + j].getAttribute('contenteditable')){
+      j++
+    }
+    div_editors[index + j].focus();
+
   }
 
   let list_editors;
@@ -96,9 +109,44 @@
 	  show_media = false
   }
 
+  function getParentEditor(target){
+    while(!target.dataset.editor && target.parentNode && target.parentNode.tagName){
+      target = target.parentNode
+    }
+    // if target found
+    if(target.dataset.editor){
+      return target
+    }
+      
+    return false
+  }
+
+  function triggerChange(e){
+    // trigger change if click is not on the current editor
+    let pEditor = getParentEditor(e.target)
+    if(!pEditor || pEditor.dataset.uid !== uid){
+      triggerUpdate()
+      hideSelect()
+    }
+  }
+
+  let updated = false
+
+  function contentUpdated(){
+    updated = true
+  }
+
+  function triggerUpdate(){
+    if(updated && !show_toolbar){
+        // dispatch change
+        dispatch('change', {uid, arr_html})
+        updated = false
+    }
+  }
+
 </script>
 
-<svelte:window on:mouseup={hideSelect} />
+<svelte:window  on:mousedown={triggerChange} />
 
 {#if show_toolbar && editable}
   <ToolBar
@@ -119,7 +167,7 @@
 <div use:setListEditors>
   {#each arr_html as h, i}
     <ContentEditor
-      {editable}
+      editable={editable}
       bind:html={h.html}
       bind:gklass={h.klass}
       on:enter={evt => addNewElm(i, evt)}
@@ -127,7 +175,9 @@
       on:merge_next={evt => mergeNext(evt, i)}
       on:select={showToolBar}
       on:hideselect={hideSelect}
-	  on:set_media={setMediaInfo}
+	    on:set_media={setMediaInfo}
+      on:input={contentUpdated}
+      on:blur={triggerUpdate}
 	   />
   {/each}
 </div>

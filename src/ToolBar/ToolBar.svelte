@@ -50,7 +50,10 @@
 		}
 
 		let rel_rect = firstParentRelative(node)
-		node.style.top = `${posY-rel_rect.top}px`
+		let pos_top = posY-rel_rect.top
+		if(posY<30)
+			pos_top = 30
+		node.style.top = `${pos_top}px`
 		mouseX = mouseX || 10
 		let mx = mouseX-node.offsetWidth/2 
 		mx = mx > 0 ? mx : 10
@@ -149,7 +152,7 @@
 	
 </script>
 
-<div use:setPosition on:mouseup|stopPropagation class="flex absolute -mt-6 shadow bg-white z-50 text-base rounded">	
+<div use:setPosition on:mousedown|stopPropagation class="flex absolute font-normal -mt-6 shadow bg-white z-50 text-base rounded">	
 	<div class="rounded flex items-center shadow-lg border border-gray-200  text-gray-700">
 			<div class="border-r">
 				<HeadingList setClass={setGClass} klass={g_classes} />	

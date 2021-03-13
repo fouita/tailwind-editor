@@ -6,7 +6,7 @@
 	let dispatch = createEventDispatcher()
 	export let selected_color = ''
 	let colors = [
-		'gray','red','orange','yellow','green','teal','blue','indigo','purple','pink'
+		'gray','red','yellow','green','blue','indigo','purple','pink'
 	]
 	
 	function selectColor(e,color){

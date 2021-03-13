@@ -74,8 +74,12 @@
 				// move to the previous node
 				let pv_elm = elm_node.previousElementSibling
 				// TODO - fix workaround
-				if(pv_elm && !pv_elm.isContentEditable)
+				// let pv_elm
+				while (pv_elm && pv_elm.previousElementSibling && !pv_elm.isContentEditable) {
 					pv_elm = pv_elm.previousElementSibling
+				}
+				// if(pv_elm && !pv_elm.isContentEditable)
+				// 	pv_elm = pv_elm.previousElementSibling
 
 				if(pv_elm && pv_elm.isContentEditable){
 					pv_elm.focus()
@@ -97,9 +101,12 @@
 			if (b_node == e_node){
 				if(b_index == arr_elms.length-1 || (b_index == arr_elms.length-2 && arr_elms[arr_elms.length-1].tag == 'BR') || b_node == elm_node){
 					let next_elm = elm_node.nextElementSibling
-					// TODO - fix workaround
-					if(next_elm && !next_elm.isContentEditable)
+					while (next_elm && next_elm.nextElementSibling && !next_elm.isContentEditable) {
 						next_elm = next_elm.nextElementSibling
+					}
+					// TODO - fix workaround
+					// if(next_elm && !next_elm.isContentEditable)
+					// 	next_elm = next_elm.nextElementSibling
 
 					if(next_elm && next_elm.isContentEditable){
 						next_elm.focus()
@@ -190,7 +197,7 @@
 			if(!~b_index){
 				elm_html = extractHTML(arr_elms)
 			}
-			dispatch('enter',{html: elm_html.trim(), next_html: next_html.trim(), klass: gklass})
+			dispatch('enter',{html: elm_html.trim(), next_html: next_html.trim(), klass: gklass, target: e.currentTarget})
 			e.preventDefault()
 			return false
 		}
@@ -263,6 +270,7 @@
 	}
 
 	function refreshEvents(){
+		if(!edit_node) return
 		[...edit_node.childNodes].forEach((ch,i) => {
 			if(ch.nodeName == 'IMG'){
 				ch.addEventListener('click', (e)=> editMedia(e.currentTarget,i))
@@ -397,7 +405,7 @@
 		}else{
 			elm.klass = klass
 		}
-
+		dispatch('input')
 	}
 	
 	function mergeArr(p_selector){
@@ -482,7 +490,6 @@
 		}else{
 			gklass = gklass.split(' ').concat([klass]).join(' ')
 		}
-
 	}
 
 	function replaceGClass(klass, reg){
@@ -502,13 +509,14 @@
 	let g_reg_txt_size = /text\-(sm|base|xl|3xl|4xl)/
 	let reg_leading = /^leading\-(none|tight|snug|normal|relaxed|loose)/
 	let reg_position = /^text\-(left|right|center)/
-	let reg_txt_color = /^text\-(teal|gray|red|orange|yellow|green|blue|indigo|purple|pink|white|black|transparent)/
-	let reg_bg_color = /^bg\-(teal|gray|red|orange|yellow|green|blue|indigo|purple|pink|white|black|transparent)/
+	let reg_txt_color = /^text\-(gray|red|yellow|green|blue|indigo|purple|pink|white|black|transparent)/
+	let reg_bg_color = /^bg\-(gray|red|yellow|green|blue|indigo|purple|pink|white|black|transparent)/
 	
 	function toggleClass(arr, klass, link){
 
 		if(reg_txt_color.test(klass) || reg_bg_color.test(klass)){
 			toggleColor(arr,klass)
+			dispatch('input')
 			return
 		}
 
@@ -539,6 +547,7 @@
 					delete elm.klass
 			}
 		}
+		dispatch('input')
 
 	}
 
@@ -570,7 +579,7 @@
 	// return last element if index is
 	function getIndex(node){
 		let p_node = node
-		if(node.nodeName == 'DIV') return -1
+		if(!node || node.nodeName == 'DIV') return -1
 		if(['SPAN','A'].includes(node.parentNode.tagName)){
 			p_node = node.parentNode
 		}
@@ -587,7 +596,7 @@
 			e_index =  x 
 		}
 		let arr_slice = arr_elms.slice(b_index,e_index+1)
-		if(!arr_slice[0].klass) 
+		if(!arr_slice[0] || !arr_slice[0].klass) 
 			return ''
 
 		let b_class = arr_slice[0].klass
@@ -707,10 +716,10 @@
 	}
 </style>
 {#if editable}
-	<div use:setEditorNode on:mousemove={setMouseX} on:mouseup|stopPropagation bind:innerHTML={html} placeholder='' spellcheck="false" contenteditable="true" on:keydown={handleKeydown}  class="focus:outline-none relative {gklass}" on:mouseup={fireSelect} on:keyup={fireSelect}  >
+	<div use:setEditorNode data-txteditor="true" on:input on:blur on:mousemove={setMouseX} on:mouseup|stopPropagation bind:innerHTML={html} placeholder='' spellcheck="false" contenteditable="true" on:keydown={handleKeydown}  class="outline-none focus:outline-none relative {gklass}" on:mouseup={fireSelect} on:keyup={fireSelect}  >
 	</div>
 {:else}
-	<div class="relative {gklass}">
+	<div class="relative {gklass}" data-txteditor="true">
 		{@html html}
 	</div>
 {/if}

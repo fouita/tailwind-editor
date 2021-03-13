@@ -8,7 +8,7 @@
 	export let klass
 
 	let colors = [
-		'gray','red','orange','yellow','green','teal','blue','indigo','purple','pink'
+		'gray','red','yellow','green','blue','indigo','purple','pink'
 	]
 	let show_colors = false
 	let selected_color = 'blue-500'

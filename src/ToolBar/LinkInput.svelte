@@ -41,15 +41,15 @@
         type="text"
         bind:value={href}
         placeholder="Past your link, such as http://fouita.com"
-        class="bg-gray-100 border p-1 w-64 rounded focus:outline-none
+        class="bg-gray-100 border p-1 w-64 rounded outline-none
         shadow-inner" />
       <button
-        class="ml-2 hover:bg-gray-300 px-3 rounded focus:outline-none"
+        class="ml-2 hover:bg-gray-300 px-3 rounded outline-none"
         on:click={addLink}>
         Link
       </button>
       <button
-        class="hover:bg-gray-300 px-3 rounded focus:outline-none"
+        class="hover:bg-gray-300 px-3 rounded outline-none"
         on:click={rmLink}>
         Unlink
       </button>
