@@ -45,7 +45,7 @@ If you want to add custom html when you load the component you can pass an array
     let html = ''
 </script>
 
-<Editor bind:html={html} {arr_html} />
+<Editor bind:html={html} {arr_html} editable />
 ```
 
 ## TODO
