@@ -2,7 +2,6 @@
   import ContentEditor from "./ContentEditor.svelte";
   import ToolBar from "../ToolBar/ToolBar.svelte";
   import MediaInput from "../ToolBar/MediaInput.svelte";
-  import { tick } from "svelte/internal";
   import {createEventDispatcher} from 'svelte'
 
   const dispatch = createEventDispatcher()
@@ -90,22 +89,30 @@
   
 
   let setMedia 
+  let delMedia 
   let show_media = false
   let img_props = {}
   function setMediaInfo(evt){
 	  setMedia = evt.detail.setMedia
+	  delMedia = evt.detail.delMedia
 	  base_node = evt.detail.base_node
 	  img_props = {
 		  alt: evt.detail.alt||'',
 		  src: evt.detail.src||'',
 		  klass: evt.detail.klass||''
 	  }
-	  // show toolbar setmedia	
+	  // show toolbar setmedia
+    setMedia(img_props)	
 	  show_media = true
   }
 
   function addMedia(img){
 	  setMedia(img)
+	  show_media = false
+  }
+
+  function rmMedia(){
+	  delMedia()
 	  show_media = false
   }
 
@@ -161,7 +168,7 @@
 {/if}
 
 {#if show_media && editable}
-	<MediaInput setMedia={addMedia} cancel={() => show_media= false} {base_node} {...img_props} />
+	<MediaInput setMedia={addMedia} delMedia={rmMedia} cancel={() => show_media= false} {base_node} {...img_props} />
 {/if}
 
 <div use:setListEditors>

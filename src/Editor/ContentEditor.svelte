@@ -477,6 +477,25 @@
 
 	}
 
+	function toggleFont(arr,klass){
+
+		for(let elm of arr){
+			if(elm.klass){
+				let classes = elm.klass.split(' ')
+				let s_font_index = classes.findIndex(c => reg_font.test(c))
+				let selected_font_class = ~s_font_index ? classes[s_font_index] : ''
+				if(selected_font_class){
+					// remove old selected color
+					elm.klass = elm.klass.replace(selected_font_class,'').trim()
+				}
+				elm.klass = elm.klass.split(' ').concat([klass]).join(' ') 
+			}else{
+				elm.klass = klass
+			}
+		}
+
+	}
+
 
 	let code_class = 'code text-sm font-mono px-8 py-6 bg-gray-200'
 	let quote_class = 'quote text-xl border-l-4 border-gray-800 px-4 font-serif'
@@ -505,17 +524,24 @@
 	}
 
 	
-	let reg_txt_size = /^text\-(sm|base|xl|3xl|4xl)/
-	let g_reg_txt_size = /text\-(sm|base|xl|3xl|4xl)/
+	let reg_txt_size = /^text\-(sm|base|xl|2xl|3xl|4xl|5xl|6xl)/
+	let g_reg_txt_size = /text\-(sm|base|xl|2xl|3xl|4xl|5xl|6xl)/
 	let reg_leading = /^leading\-(none|tight|snug|normal|relaxed|loose)/
 	let reg_position = /^text\-(left|right|center)/
 	let reg_txt_color = /^text\-(gray|red|yellow|green|blue|indigo|purple|pink|white|black|transparent)/
 	let reg_bg_color = /^bg\-(gray|red|yellow|green|blue|indigo|purple|pink|white|black|transparent)/
+	const reg_font = /font\-(thin|normal|semibold|bold|black)/
 	
 	function toggleClass(arr, klass, link){
 
 		if(reg_txt_color.test(klass) || reg_bg_color.test(klass)){
 			toggleColor(arr,klass)
+			dispatch('input')
+			return
+		}
+		
+		if(reg_font.test(klass)){
+			toggleFont(arr,klass)
 			dispatch('input')
 			return
 		}
@@ -636,23 +662,55 @@
 		
 		return href
 	}
+
+	function testImgUrl(url){
+		return new Promise(function(resolve) {
+			const timeout = 5000;
+			let timer, img = new Image();
+			img.onerror = img.onabort = function() {
+				clearTimeout(timer);
+				resolve(false);
+			};
+			img.onload = function() {
+				clearTimeout(timer);
+				resolve(true);
+			};
+			timer = setTimeout(function() {
+				img.src = "//!!!!/noexist.jpg";
+				resolve(false);
+			}, timeout); 
+			img.src = url;
+		});
+	}
 	
 	// embed image or video!
-	function embedElement(e,b_node,b_index){
+	async function embedElement(e,b_node,b_index){
 		//TODO key code is not up/down/left/right
 		let src = b_node.textContent.split(' ').pop()
-		if(src && /^https?:\/\/.*\.(gif|jpe?g|tiff?|png|webp|bmp)$/i.test(src.trim())){
-			dispatch('set_media', {setMedia: (img) => setImg(img.klass,img.alt,src,b_index), base_node: b_node})
+		if(src && src.startsWith('https') && await testImgUrl(src.trim())){ ///^https?:\/\/.*\.(gif|jpe?g|tiff?|png|webp|bmp)$/i.test(src.trim())
+			dispatch('set_media', {
+				setMedia: (img) => setImg(img.klass,img.alt,src,b_index), 
+				base_node: b_node,
+				delMedia: () => delElm(b_index),
+			})
 		}
-	}
-
-	function updateMedia(){
-		console.log("Update media !!! ")
 	}
 
 	function editMedia(b_node, i){
 		let elm = arr_elms[i]
-		dispatch('set_media',  {setMedia: (img) => setImg(img.klass,img.alt,img.src,i), base_node: b_node, src: elm.href, klass: elm.klass, alt: elm.txt})
+		dispatch('set_media',  {
+			setMedia: (img) => setImg(img.klass,img.alt,img.src,i), 
+			base_node: b_node, 
+			src: elm.href, 
+			klass: elm.klass, 
+			alt: elm.txt,
+			delMedia: () => delElm(i),
+		})
+	}
+
+	function delElm(b_index){
+		arr_elms.splice(b_index,1)
+		refresh()
 	}
 
 	function setImg(klass,alt,src,b_index){
@@ -719,6 +777,7 @@
 	<div use:setEditorNode data-txteditor="true" on:input on:blur on:mousemove={setMouseX} on:mouseup|stopPropagation bind:innerHTML={html} placeholder='' spellcheck="false" contenteditable="true" on:keydown={handleKeydown}  class="outline-none focus:outline-none relative {gklass}" on:mouseup={fireSelect} on:keyup={fireSelect}  >
 	</div>
 {:else}
+
 	<div class="relative {gklass}" data-txteditor="true">
 		{@html html}
 	</div>

@@ -71,6 +71,9 @@
 	function cgexist(klass){
 		return g_classes.includes(klass)
 	}
+	function cregexist(reg){
+		return reg.test(classes)
+	}
 
 	const STYLE = {
 		BOLD: 'font-bold',
@@ -87,9 +90,11 @@
 
 	let e_classes = {}
 
+	const reg_font = /font\-(thin|normal|semibold|bold|black)/
+
 	function initEClasses(){
 		e_classes = {
-			bold: cexist(STYLE.BOLD),
+			bold: cregexist(reg_font),
 			italic: cexist(STYLE.ITALIC),
 			underline: cexist(STYLE.UNDERLINE),
 			linethrough: cexist(STYLE.LINETHROUGH),
@@ -114,6 +119,29 @@
 			classes = n_classes.join(' ')
 		}
 		
+		initEClasses()
+	}
+
+	function toggleBold(){
+		const fonts = ['thin','normal','semibold','bold','black']
+		let included = false
+		for(let i=0; i< fonts.length;i++){
+			if(classes.includes(fonts[i])){
+				included = true
+				if(i+1<fonts.length){
+					classes = classes.replace('font-'+fonts[i],'font-'+fonts[i+1]).trim()
+					setClass('font-'+fonts[i+1])
+				}else{
+					classes = classes.replace('font-'+fonts[i],'font-'+fonts[0]).trim()
+					setClass('font-'+fonts[0])
+				}
+				break;
+			}
+		}
+		if(!included){
+			classes = classes.split(' ').concat(['font-bold']).join(' ').trim()
+			setClass('font-bold')
+		}
 		initEClasses()
 	}
 	
@@ -157,7 +185,7 @@
 			<div class="border-r">
 				<HeadingList setClass={setGClass} klass={g_classes} />	
 			</div>
-			<div class="px-2 cursor-pointer select-none { e_classes.bold ? 'text-blue-600':''} font-medium hover:bg-gray-200 py-1" on:mousedown={() => toggle(STYLE.BOLD)}>
+			<div class="px-2 cursor-pointer select-none { e_classes.bold ? 'text-blue-600':''} font-medium hover:bg-gray-200 py-1" on:mousedown={toggleBold}>
 				B
 			</div>
 			<div class="px-3 cursor-pointer select-none { e_classes.italic ? 'text-blue-600':''} italic hover:bg-gray-200 py-1" on:mousedown={() => toggle(STYLE.ITALIC)}>

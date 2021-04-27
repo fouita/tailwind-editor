@@ -26,24 +26,36 @@
 			value:'text-base'
 		},
 		{
-			label:'Heading 1',
-			value:'text-4xl'
-		},
-		{
-			label:'Heading 2',
-			value:'text-3xl'
-		},
-		{
-			label:'Heading 3',
-			value:'text-xl'
-		},
-		{
 			label:'Code',
 			value: code_class
 		},
 		{
 			label:'Quote',
 			value: quote_class
+		},
+		{
+			label:'Heading 1',
+			value:'text-6xl'
+		},
+		{
+			label:'Heading 2',
+			value:'text-5xl'
+		},
+		{
+			label:'Heading 3',
+			value:'text-4xl'
+		},
+		{
+			label:'Heading 4',
+			value:'text-3xl'
+		},
+		{
+			label:'Heading 5',
+			value:'text-2xl'
+		},
+		{
+			label:'Heading 6',
+			value:'text-xl'
 		}
 	]
 
