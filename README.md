@@ -21,7 +21,7 @@ Import to use in a [svelte](https://svelte.dev) project, you need also [tailwind
 </script>
 
 <div class="flex">
-    <Editor bind:html={html}>
+    <Editor bind:html={html} />
     <div>
         {html}
     </div>
