@@ -44,6 +44,10 @@
 			arr_elms = []
 	}
 
+	$: if(editable){
+		setTimeout(refreshEvents)
+	}
+
 	onMount(() => {
 		mounted = true
 		generateArr()
@@ -734,6 +738,7 @@
 		let b_index = getIndex(b_node)
 		let e_index = getIndex(e_node)
 
+		if(!b_node?.nodeName) return
 		if(b_node.nodeName == 'DIV' || e_node.nodeName == 'DIV'){
 			hideSelect()
 			return

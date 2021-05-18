@@ -142,10 +142,9 @@
   function contentUpdated(){
     updated = true
   }
-
+  
   function triggerUpdate(){
     if(updated && !show_toolbar){
-        // dispatch change
         dispatch('change', {uid, arr_html})
         updated = false
     }
