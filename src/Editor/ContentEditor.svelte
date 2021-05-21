@@ -12,9 +12,9 @@
 	async function generateArr(){
 		let div = document.createElement('div')
 		div.innerHTML = html
-		
 		let n_elms = []
 		for(let elm of [...div.childNodes]){
+			const itrue = (attr) => elm.hasAttribute(attr)
 			
 			if(elm.nodeName == 'BR')
 				n_elms.push({tag: 'BR',txt: ""})
@@ -22,6 +22,12 @@
 				n_elms.push({tag: 'A',txt: elm.textContent, href: elm.getAttribute('href'), klass: elm.classList&&[...elm.classList].join(' ')})
 			else if(elm.nodeName == 'IMG')
 				n_elms.push({tag: 'IMG',txt: elm.getAttribute('alt'), href: elm.getAttribute('src'), klass: elm.classList&&[...elm.classList].join(' ')})
+				else if(elm.nodeName == 'VIDEO')
+				n_elms.push({tag: 'VIDEO',href: elm.getAttribute('src'), klass: elm.classList&&[...elm.classList].join(' '),
+				opts: {autoplay: itrue('autoplay'), loop: itrue('loop'), muted: itrue('muted'), controls: itrue('controls')}
+			})
+			else if(elm.nodeName == 'IFRAME')
+				n_elms.push({tag: 'IFRAME', href: elm.getAttribute('src'), klass: elm.classList&&[...elm.classList].join(' ')})
 			else if(elm.nodeName !== '#text')
 				n_elms.push({txt: elm.innerText, klass: elm.classList&&[...elm.classList].join(' ')})
 			else if(elm.nodeName == '#text' && elm.length>0 ){
@@ -65,11 +71,21 @@
 		let e_node = selection.focusNode
 		let start_i = selection.baseOffset
 		let end_i = selection.extentOffset
-		let elm_node = (b_node.tagName&&b_node.tagName=='DIV') ? b_node : b_node.parentNode.tagName == 'DIV' ? b_node.parentNode : b_node.parentNode.parentNode
+		if(!b_node) return
+		let elm_node = (b_node?.tagName=='DIV') ? b_node : b_node.parentNode.tagName == 'DIV' ? b_node.parentNode : b_node.parentNode.parentNode
 		
 		let b_index = getIndex(b_node)
 		let e_index = getIndex(e_node)
 
+		const adjustPosition = (n,d="up") => {
+			let children = [...n.childNodes]
+			let last_child = children[children.length-1]
+			if(!last_child) return
+			last_child = ['#text','BR','IMG','VIDEO','IFRAME'].includes(last_child.nodeName) ? last_child : last_child.childNodes[0] 
+			if(!last_child) return false
+			let pos = d == "up" ? last_child.textContent.length : 0
+			selection.setBaseAndExtent(last_child,  pos, last_child, pos);
+		}
 
 
 		// up key
@@ -78,22 +94,14 @@
 				// move to the previous node
 				let pv_elm = elm_node.previousElementSibling
 				// TODO - fix workaround
-				// let pv_elm
 				while (pv_elm && pv_elm.previousElementSibling && !pv_elm.isContentEditable) {
 					pv_elm = pv_elm.previousElementSibling
 				}
-				// if(pv_elm && !pv_elm.isContentEditable)
-				// 	pv_elm = pv_elm.previousElementSibling
 
 				if(pv_elm && pv_elm.isContentEditable){
 					pv_elm.focus()
 					e.preventDefault()
-					let children = [...pv_elm.childNodes]
-					let last_child = children[children.length-1]
-					if(!last_child) return
-					last_child = last_child.nodeName == '#text'||last_child.nodeName=='BR' ? last_child : last_child.childNodes[0] 
-					
-					selection.setBaseAndExtent(last_child, last_child.textContent.length, last_child, last_child.textContent.length);
+					adjustPosition(pv_elm, 'up')
 					return false
 				}
 			}
@@ -103,18 +111,19 @@
 		if(e.keyCode == 40){ 
 			// get index
 			if (b_node == e_node){
-				if(b_index == arr_elms.length-1 || (b_index == arr_elms.length-2 && arr_elms[arr_elms.length-1].tag == 'BR') || b_node == elm_node){
+				// if(b_index == arr_elms.length-1 || (b_index == arr_elms.length-2 && arr_elms[arr_elms.length-1].tag == 'BR') || b_node == elm_node){
+				if(b_index == arr_elms.length-1 || ((b_index == -1 || start_i == arr_elms.length-1) && arr_elms[arr_elms.length-1].tag == 'BR')){
+
 					let next_elm = elm_node.nextElementSibling
+					
 					while (next_elm && next_elm.nextElementSibling && !next_elm.isContentEditable) {
 						next_elm = next_elm.nextElementSibling
 					}
-					// TODO - fix workaround
-					// if(next_elm && !next_elm.isContentEditable)
-					// 	next_elm = next_elm.nextElementSibling
 
 					if(next_elm && next_elm.isContentEditable){
 						next_elm.focus()
 						e.preventDefault()
+						//adjustPosition(next_elm, 'down')
 						return false
 					}
 				}
@@ -124,7 +133,7 @@
 		// del key
 		if(e.keyCode == 46){
 			let elms = arr_elms.length && arr_elms[arr_elms.length-1].tag == 'BR' ? arr_elms.slice(0,arr_elms.length-1) : arr_elms
-			if((!~b_index && !elms.length) || (b_index == elms.length-1 && start_i == elms[elms.length-1].txt.length && !selection.toString())){
+			if((!~b_index && !elms.length) || (b_node.tagName == 'DIV' && b_index==0 && start_i == elms.length) || (b_index == elms.length-1 && start_i == elms[elms.length-1].txt.length && !selection.toString())){
 				let l_node_index 
 				let l_node_end 
 				let pv_elm = elm_node
@@ -188,7 +197,8 @@
 		if(e.keyCode == 13 && e.shiftKey == false){
 			let elm_html = ''
 			let next_html = ''
-			let elm_index = b_index==-1 ? arr_elms.length-1 : b_index
+			let elm_index = b_index==-1 ? arr_elms.length-1 : b_index+(b_node.tagName == 'DIV' && start_i>0 ?  start_i-1 : 0)
+
 			if(arr_elms.length>0 && ~b_index){
 				
 				let n_arr = splitArr(arr_elms,elm_index,start_i)
@@ -228,7 +238,7 @@
 				
 				for (let ch of children){
 					if(ch && ch.textContent){
-						elms.push({txt: ch.textContent, klass: arr_elms[b_index].klass, tag: parent.tagName})
+						elms.push({txt: ch.textContent, klass: arr_elms[b_index]?.klass||"", tag: parent.tagName})
 					}else{
 						elms.push({tag: "BR", txt: ""})
 					}
@@ -260,6 +270,10 @@
 				str += `<a href=${elm.href} target='_blank' class="${elm.klass}">${elm_txt}</a>`
 			}else if(elm.tag == 'IMG'){
 				str += `<img src=${elm.href} class="${elm.klass}" alt=${elm_txt} />`
+			}else if(elm.tag == 'VIDEO'){
+				str += `<video src=${elm.href} class="${elm.klass}" ${!!elm.opts?.loop ? 'loop':''} ${!!elm.opts?.autoplay ? 'autoplay':''} ${!!elm.opts?.muted ? 'muted':''} ${!!elm.opts?.controls ? 'controls':''} />`
+			}else if(elm.tag == 'IFRAME'){
+				str += `<iframe src=${elm.href} class="${elm.klass}" />`
 			}else if(elm.klass){
 				str += `<span class="${elm.klass}">${elm_txt}</span>`
 			}else{
@@ -276,7 +290,7 @@
 	function refreshEvents(){
 		if(!edit_node) return
 		[...edit_node.childNodes].forEach((ch,i) => {
-			if(ch.nodeName == 'IMG'){
+			if(['IMG','VIDEO','IFRAME'].includes(ch.nodeName)){
 				ch.addEventListener('click', (e)=> editMedia(e.currentTarget,i))
 			}
 		})
@@ -609,8 +623,12 @@
 	// return last element if index is
 	function getIndex(node){
 		let p_node = node
-		if(!node || node.nodeName == 'DIV') return -1
-		if(['SPAN','A'].includes(node.parentNode.tagName)){
+		if(!node) return -1
+		if(node.nodeName == 'DIV') {
+			p_node = node.children[0]
+			if(!p_node) return -1
+		}
+		else if(['SPAN','A'].includes(node.parentNode.tagName)){
 			p_node = node.parentNode
 		}
 		return [...p_node.parentNode.childNodes].filter(n => n.nodeName!='#text' || n.length>0).indexOf(p_node)
@@ -686,29 +704,82 @@
 			img.src = url;
 		});
 	}
+
+	function testVideoUrl(url){
+		return /^https?:\/\/.*\.(mp4|ogg|webm)$/i.test(url.trim())
+	}
+
+	function parseYouTube(str) {
+		// url : //youtube.com/watch?v=Bo_deCOd1HU
+		// share : //youtu.be/Bo_deCOd1HU
+		// embed : //youtube.com/embed/Bo_deCOd1HU
+		
+		const re = /\/\/(?:www\.)?youtu(?:\.be|be\.com)\/(?:watch\?v=|embed\/)?([a-z0-9_\-]+)/i; 
+		const matches = re.exec(str);
+		if (matches && matches[1]){
+			return 'https://www.youtube.com/embed/'+matches[1]
+		}
+	}
+
+	function parseVimeo(str) {
+		// http://vimeo.com/86164897
+		
+		const re = /\/\/(?:www\.)?vimeo.com\/([0-9a-z\-_]+)/i;
+		const matches = re.exec(str);
+		if(matches && matches[1]) {
+			return 'https://player.vimeo.com/video/'+matches[1]
+		}
+	}
 	
 	// embed image or video!
 	async function embedElement(e,b_node,b_index){
 		//TODO key code is not up/down/left/right
 		let src = b_node.textContent.split(' ').pop()
-		if(src && src.startsWith('https') && await testImgUrl(src.trim())){ ///^https?:\/\/.*\.(gif|jpe?g|tiff?|png|webp|bmp)$/i.test(src.trim())
-			dispatch('set_media', {
-				setMedia: (img) => setImg(img.klass,img.alt,src,b_index), 
-				base_node: b_node,
-				delMedia: () => delElm(b_index),
-			})
+		if(src && src.startsWith('https')){ 
+			let is_img = await testImgUrl(src.trim())
+			let is_video = testVideoUrl(src.trim())
+			let iframe_vid = parseYouTube(src.trim()) || parseVimeo(src.trim())
+			if(is_img || is_video || iframe_vid) {
+				dispatch('set_media', {
+					setMedia: (img) => {
+						if(is_img)
+							setImg(img.klass,img.alt,src,b_index)
+						else if(is_video)
+							setVideo(img.klass,img.opts,src,b_index)
+						else if(iframe_vid)
+							setIframe(img.klass,iframe_vid,b_index)
+					}, 
+					media_type: is_img ? 'IMG': is_video ? 'VIDEO' : iframe_vid ? 'IFRAME' : 'AUDIO',
+					base_node: b_node,
+					delMedia: () => delElm(b_index),
+					mouseX
+				})
+			}
 		}
 	}
 
 	function editMedia(b_node, i){
 		let elm = arr_elms[i]
+		let extra = {alt: elm.txt}
+		if(b_node.tagName == "VIDEO")
+			extra = {opts: elm.opts}
 		dispatch('set_media',  {
-			setMedia: (img) => setImg(img.klass,img.alt,img.src,i), 
+			setMedia: (img) => {
+				if(b_node.tagName == "VIDEO"){
+					setVideo(img.klass,img.opts,img.src,i)
+				}else if(b_node.tagName == "IMG"){
+					setImg(img.klass,img.alt,img.src,i)
+				}else if(b_node.tagName == "IFRAME"){
+					setIframe(img.klass, img.src,i)
+				}
+			}, 
 			base_node: b_node, 
+			media_type: b_node.tagName,
 			src: elm.href, 
 			klass: elm.klass, 
-			alt: elm.txt,
+			...extra,
 			delMedia: () => delElm(i),
+			mouseX
 		})
 	}
 
@@ -719,6 +790,16 @@
 
 	function setImg(klass,alt,src,b_index){
 		arr_elms[b_index] = {tag: 'IMG', href: src, txt: alt, klass}
+		refresh()
+	}
+	
+	function setVideo(klass,opts,src,b_index){
+		arr_elms[b_index] = {tag: 'VIDEO', href: src, opts, klass}
+		refresh()
+	}
+	
+	function setIframe(klass,src,b_index){
+		arr_elms[b_index] = {tag: 'IFRAME', href: src, klass}
 		refresh()
 	}
 	

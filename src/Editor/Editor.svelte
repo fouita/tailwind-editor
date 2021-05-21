@@ -99,8 +99,11 @@
 	  img_props = {
 		  alt: evt.detail.alt||'',
 		  src: evt.detail.src||'',
-		  klass: evt.detail.klass||''
+      opts: evt.detail.opts || {},
+		  klass: evt.detail.klass||'',
+      media_type: evt.detail.media_type
 	  }
+    mouseX = evt.detail.mouseX
 	  // show toolbar setmedia
     setMedia(img_props)	
 	  show_media = true
@@ -167,7 +170,7 @@
 {/if}
 
 {#if show_media && editable}
-	<MediaInput setMedia={addMedia} delMedia={rmMedia} cancel={() => show_media= false} {base_node} {...img_props} />
+	<MediaInput setMedia={addMedia} delMedia={rmMedia} cancel={() => show_media= false} {base_node} {...img_props} {mouseX} />
 {/if}
 
 <div use:setListEditors>
