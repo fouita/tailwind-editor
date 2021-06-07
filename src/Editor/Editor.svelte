@@ -3,7 +3,7 @@
   import ToolBar from "../ToolBar/ToolBar.svelte";
   import MediaInput from "../ToolBar/MediaInput.svelte";
   import {createEventDispatcher} from 'svelte'
-
+  import "../global.css"
   const dispatch = createEventDispatcher()
 
   export let arr_html = [{ html: ``, klass: "p-2" }];
@@ -110,13 +110,15 @@
   }
 
   function addMedia(img){
-	  setMedia(img)
+    setMedia(img)
 	  show_media = false
+    disaptchChange()
   }
 
   function rmMedia(){
 	  delMedia()
 	  show_media = false
+    disaptchChange()
   }
 
   function getParentEditor(target){
@@ -148,9 +150,13 @@
   
   function triggerUpdate(){
     if(updated && !show_toolbar){
-        dispatch('change', {uid, arr_html})
+        disaptchChange()
         updated = false
     }
+  }
+
+  function disaptchChange(){
+      dispatch('change', {uid, arr_html})
   }
 
 </script>

@@ -180,7 +180,7 @@
 	
 </script>
 
-<div use:setPosition on:mousedown|stopPropagation class="flex absolute font-normal -mt-6 shadow bg-white z-50 text-base rounded">	
+<div use:setPosition on:mousedown|stopPropagation class="flex absolute font-normal -mt-6 shadow bg-white z-950 text-base rounded">	
 	<div class="rounded flex items-center shadow-lg border border-gray-200  text-gray-700">
 			<div class="border-r">
 				<HeadingList setClass={setGClass} klass={g_classes} />	

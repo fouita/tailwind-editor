@@ -52,7 +52,7 @@
 		<slot>Click To show</slot>
 	</div>
 	{#if open}
-	<div class="absolute -ml-1 z-20 {klass}">
+	<div class="absolute -ml-1 z-920 {klass}">
 		<List {list} {selected} on:select />
 	</div>
 	{/if}

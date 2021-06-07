@@ -33,7 +33,7 @@
   </span>
   {#if show_link}
     <div
-      class="absolute p-3 shadow-xl flex rounded bg-white -ml-24 mt-1 z-20"
+      class="absolute p-3 shadow-xl flex rounded bg-white -ml-24 mt-1 z-920"
       on:click={stop}>
       <input
         on:click={stop}

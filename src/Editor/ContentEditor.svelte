@@ -1,6 +1,7 @@
 
 <script>
 	import { tick, createEventDispatcher, onMount } from 'svelte/internal';
+	import Util from '../lib/Util';
 	let dispatch = createEventDispatcher()
 
 	let arr_elms = []
@@ -26,8 +27,8 @@
 				n_elms.push({tag: 'VIDEO',href: elm.getAttribute('src'), klass: elm.classList&&[...elm.classList].join(' '),
 				opts: {autoplay: itrue('autoplay'), loop: itrue('loop'), muted: itrue('muted'), controls: itrue('controls')}
 			})
-			else if(elm.nodeName == 'IFRAME')
-				n_elms.push({tag: 'IFRAME', href: elm.getAttribute('src'), klass: elm.classList&&[...elm.classList].join(' ')})
+			else if(elm.dataset?.iframe)
+				n_elms.push({tag: 'IFRAME', href: elm.lastChild.getAttribute('src'), klass: elm.lastChild.classList&&[...elm.lastChild.classList].join(' ')})
 			else if(elm.nodeName !== '#text')
 				n_elms.push({txt: elm.innerText, klass: elm.classList&&[...elm.classList].join(' ')})
 			else if(elm.nodeName == '#text' && elm.length>0 ){
@@ -81,7 +82,7 @@
 			let children = [...n.childNodes]
 			let last_child = children[children.length-1]
 			if(!last_child) return
-			last_child = ['#text','BR','IMG','VIDEO','IFRAME'].includes(last_child.nodeName) ? last_child : last_child.childNodes[0] 
+			last_child = ['#text','BR','IMG','VIDEO'].includes(last_child.nodeName)||last_child?.dataset?.iframe ? last_child : last_child.childNodes[0] 
 			if(!last_child) return false
 			let pos = d == "up" ? last_child.textContent.length : 0
 			selection.setBaseAndExtent(last_child,  pos, last_child, pos);
@@ -133,7 +134,7 @@
 		// del key
 		if(e.keyCode == 46){
 			let elms = arr_elms.length && arr_elms[arr_elms.length-1].tag == 'BR' ? arr_elms.slice(0,arr_elms.length-1) : arr_elms
-			if((!~b_index && !elms.length) || (b_node.tagName == 'DIV' && b_index==0 && start_i == elms.length) || (b_index == elms.length-1 && start_i == elms[elms.length-1].txt.length && !selection.toString())){
+			if((!~b_index && !elms.length) || (b_node.tagName == 'DIV' && b_index==0 && start_i == elms.length) || (b_index == elms.length-1 && start_i == elms[elms.length-1].txt?.length && !selection.toString())){
 				let l_node_index 
 				let l_node_end 
 				let pv_elm = elm_node
@@ -273,7 +274,16 @@
 			}else if(elm.tag == 'VIDEO'){
 				str += `<video src=${elm.href} class="${elm.klass}" ${!!elm.opts?.loop ? 'loop':''} ${!!elm.opts?.autoplay ? 'autoplay':''} ${!!elm.opts?.muted ? 'muted':''} ${!!elm.opts?.controls ? 'controls':''} />`
 			}else if(elm.tag == 'IFRAME'){
-				str += `<iframe src=${elm.href} class="${elm.klass}" />`
+				let ed_str = ""
+				if(editable){
+					ed_str = `<div class="p-1 text-xs w-32 bg-yellow-200 text-yellow-800 cursor-pointer underline text-center">
+						Edit iframe
+					</div>`
+				}
+				str += `<div class="iframe-wrap" data-iframe="true" contenteditable="false">
+					${ed_str}
+					<iframe src=${elm.href} class="${elm.klass}" />
+				</div>`	
 			}else if(elm.klass){
 				str += `<span class="${elm.klass}">${elm_txt}</span>`
 			}else{
@@ -287,10 +297,16 @@
 		html = extractHTML(arr_elms)
 	}
 
+	let l_edit_state = editable
+	$: if(l_edit_state != editable){
+		l_edit_state = editable
+		refresh()
+	}
+
 	function refreshEvents(){
 		if(!edit_node) return
 		[...edit_node.childNodes].forEach((ch,i) => {
-			if(['IMG','VIDEO','IFRAME'].includes(ch.nodeName)){
+			if(['IMG','VIDEO'].includes(ch.nodeName) || ch.classList?.contains('iframe-wrap')){
 				ch.addEventListener('click', (e)=> editMedia(e.currentTarget,i))
 			}
 		})
@@ -685,63 +701,36 @@
 		return href
 	}
 
-	function testImgUrl(url){
-		return new Promise(function(resolve) {
-			const timeout = 5000;
-			let timer, img = new Image();
-			img.onerror = img.onabort = function() {
-				clearTimeout(timer);
-				resolve(false);
-			};
-			img.onload = function() {
-				clearTimeout(timer);
-				resolve(true);
-			};
-			timer = setTimeout(function() {
-				img.src = "//!!!!/noexist.jpg";
-				resolve(false);
-			}, timeout); 
-			img.src = url;
-		});
-	}
-
-	function testVideoUrl(url){
-		return /^https?:\/\/.*\.(mp4|ogg|webm)$/i.test(url.trim())
-	}
-
-	function parseYouTube(str) {
-		// url : //youtube.com/watch?v=Bo_deCOd1HU
-		// share : //youtu.be/Bo_deCOd1HU
-		// embed : //youtube.com/embed/Bo_deCOd1HU
-		
-		const re = /\/\/(?:www\.)?youtu(?:\.be|be\.com)\/(?:watch\?v=|embed\/)?([a-z0-9_\-]+)/i; 
-		const matches = re.exec(str);
-		if (matches && matches[1]){
-			return 'https://www.youtube.com/embed/'+matches[1]
-		}
-	}
-
-	function parseVimeo(str) {
-		// http://vimeo.com/86164897
-		
-		const re = /\/\/(?:www\.)?vimeo.com\/([0-9a-z\-_]+)/i;
-		const matches = re.exec(str);
-		if(matches && matches[1]) {
-			return 'https://player.vimeo.com/video/'+matches[1]
-		}
-	}
 	
+	
+	function setClasses(media){
+		let zmatch = media.klass.match(/z-\d+/)
+		let z = zmatch?.[0] || ""
+		let floatmatch = media.klass.match(/float-\w+/)
+		let float = floatmatch?.[0] || ""
+		if(z){
+			gklass = gklass.replace(/z-\d+/,'')
+		}
+		if(float){
+			gklass = gklass.replace(/float-\w+/,'')
+		}
+		gklass += ` ${z} ${float} `
+		gklass = gklass.replace(/\s+/g,' ')
+		media.klass = media.klass.replace(/z-\d+/,'').replace(/float-\w+/,'')
+	}
+
 	// embed image or video!
 	async function embedElement(e,b_node,b_index){
 		//TODO key code is not up/down/left/right
 		let src = b_node.textContent.split(' ').pop()
 		if(src && src.startsWith('https')){ 
-			let is_img = await testImgUrl(src.trim())
-			let is_video = testVideoUrl(src.trim())
-			let iframe_vid = parseYouTube(src.trim()) || parseVimeo(src.trim())
+			let is_img = await Util.testImgUrl(src.trim())
+			let is_video = Util.testVideoUrl(src.trim())
+			let iframe_vid = Util.parseYouTube(src.trim()) || Util.parseVimeo(src.trim())
 			if(is_img || is_video || iframe_vid) {
 				dispatch('set_media', {
 					setMedia: (img) => {
+						setClasses(img)
 						if(is_img)
 							setImg(img.klass,img.alt,src,b_index)
 						else if(is_video)
@@ -751,6 +740,7 @@
 					}, 
 					media_type: is_img ? 'IMG': is_video ? 'VIDEO' : iframe_vid ? 'IFRAME' : 'AUDIO',
 					base_node: b_node,
+					src: iframe_vid || src,
 					delMedia: () => delElm(b_index),
 					mouseX
 				})
@@ -760,23 +750,27 @@
 
 	function editMedia(b_node, i){
 		let elm = arr_elms[i]
-		let extra = {alt: elm.txt}
+		let extra = {alt: elm?.txt||''}
 		if(b_node.tagName == "VIDEO")
-			extra = {opts: elm.opts}
+			extra = {opts: elm?.opts||{}}
+		// if(b_node.classList?.contains('iframe-wrap')){
+		// 	b_node = b_node.lastChild
+		// }
 		dispatch('set_media',  {
 			setMedia: (img) => {
-				if(b_node.tagName == "VIDEO"){
+				setClasses(img)
+				if(img.media_type == "VIDEO"){
 					setVideo(img.klass,img.opts,img.src,i)
-				}else if(b_node.tagName == "IMG"){
+				}else if(img.media_type == "IMG"){
 					setImg(img.klass,img.alt,img.src,i)
-				}else if(b_node.tagName == "IFRAME"){
+				}else if(img.media_type == "IFRAME"){
 					setIframe(img.klass, img.src,i)
 				}
 			}, 
 			base_node: b_node, 
 			media_type: b_node.tagName,
-			src: elm.href, 
-			klass: elm.klass, 
+			src: elm?.href||'', 
+			klass: elm?.klass||'', 
 			...extra,
 			delMedia: () => delElm(i),
 			mouseX
@@ -789,6 +783,7 @@
 	}
 
 	function setImg(klass,alt,src,b_index){
+		gklass
 		arr_elms[b_index] = {tag: 'IMG', href: src, txt: alt, klass}
 		refresh()
 	}
@@ -849,6 +844,13 @@
 	function setEditorNode(node){
 		edit_node = node
 	}
+
+	$: ish1 = gklass.includes('text-6xl')
+	$: ish2 = gklass.includes('text-5xl')
+	$: ish3 = gklass.includes('text-4xl')
+	$: ish4 = gklass.includes('text-3xl')
+	$: ish5 = gklass.includes('text-2xl')
+	$: ish6 = gklass.includes('text-xl')
 </script>
 
 <style>
@@ -863,9 +865,34 @@
 	<div use:setEditorNode data-txteditor="true" on:input on:blur on:mousemove={setMouseX} on:mouseup|stopPropagation bind:innerHTML={html} placeholder='' spellcheck="false" contenteditable="true" on:keydown={handleKeydown}  class="outline-none focus:outline-none relative {gklass}" on:mouseup={fireSelect} on:keyup={fireSelect}  >
 	</div>
 {:else}
-
-	<div class="relative {gklass}" data-txteditor="true">
-		{@html html}
-	</div>
+	{#if ish1 }
+		<h1 class="relative {gklass}" data-txteditor="true">
+			{@html html}
+		</h1>
+	{:else if ish2 }
+		<h2 class="relative {gklass}" data-txteditor="true">
+			{@html html}
+		</h2>
+	{:else if ish3 }
+		<h3 class="relative {gklass}" data-txteditor="true">
+			{@html html}
+		</h3>
+	{:else if ish4 }
+		<h4 class="relative {gklass}" data-txteditor="true">
+			{@html html}
+		</h4>
+	{:else if ish5 }
+		<h5 class="relative {gklass}" data-txteditor="true">
+			{@html html}
+		</h5>
+	{:else if ish6 }
+		<h6 class="relative {gklass}" data-txteditor="true">
+			{@html html}
+		</h6>
+	{:else}
+		<div class="relative {gklass}" data-txteditor="true">
+			{@html html}
+		</div>
+	{/if}
 {/if}
 					  

@@ -1,4 +1,6 @@
 <script>
+    import Util from "../lib/Util"
+
     export let alt 
     export let src 
     export let opts
@@ -8,13 +10,19 @@
     export let cancel
     export let media_type
 
-	function addMedia(){
-		setMedia({
-            src,
-            klass,
-            alt,
-            opts
-        })
+	async function addMedia(){
+        let is_img = await Util.testImgUrl(src.trim())
+		let is_video = Util.testVideoUrl(src.trim())
+		let iframe_vid = Util.parseYouTube(src.trim()) || Util.parseVimeo(src.trim())
+        if(is_img || is_video || iframe_vid) {
+            setMedia({
+                src: iframe_vid || src,
+                klass,
+                alt,
+                opts,
+                media_type: is_img ? 'IMG': is_video ? 'VIDEO' : iframe_vid ? 'IFRAME' : 'AUDIO',
+            })
+        }
 	}
 
 	function cancelMedia(){
@@ -66,7 +74,7 @@
 
 
 
-<div use:setPosition class="absolute -mt-6 p-3 shadow-xl flex flex-col rounded bg-white z-40">
+<div use:setPosition class="absolute -mt-6 p-3 shadow-xl flex flex-col rounded bg-white z-940">
     {#if src}
         <input type="text" bind:value={src} placeholder="Image src" class="bg-gray-100 text-sm font-mono mb-2 border p-1 w-64 rounded-sm outline-none shadow-inner" >
     {/if}

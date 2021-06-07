@@ -43,7 +43,7 @@
 		<span class="">A</span> <DownIcon />
 	</div>
 	{#if show_colors}
-		<div class="absolute top-0 left-0 mt-8 z-20 bg-white">	
+		<div class="absolute top-0 left-0 mt-8 z-920 bg-white">	
 			<ColorList selected_color={selected_color} on:select={selectColor} />
 		</div>
 	{/if}
