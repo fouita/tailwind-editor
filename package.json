@@ -26,7 +26,7 @@
     "dist"
   ],
   "description": "Svelte component to generate tailwindcss html from a notion like wysiwyg editor.",
-  "version": "0.1.35",
+  "version": "0.1.44",
   "dependencies": {},
   "repository": {
     "type": "git",

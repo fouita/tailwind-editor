@@ -156,7 +156,7 @@
   }
 
   function disaptchChange(){
-      dispatch('change', {uid, arr_html})
+    dispatch('change', {uid, arr_html})
   }
 
 </script>
@@ -179,7 +179,7 @@
 	<MediaInput setMedia={addMedia} delMedia={rmMedia} cancel={() => show_media= false} {base_node} {...img_props} {mouseX} />
 {/if}
 
-<div use:setListEditors>
+<div use:setListEditors key="ed">
   {#each arr_html as h, i}
     <ContentEditor
       editable={editable}
@@ -192,6 +192,7 @@
       on:hideselect={hideSelect}
 	    on:set_media={setMediaInfo}
       on:input={contentUpdated}
+      on:changeClass={disaptchChange}
       on:blur={triggerUpdate}
 	   />
   {/each}

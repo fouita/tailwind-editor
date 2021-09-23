@@ -8,6 +8,7 @@
 	let open = false 
 	function selectClass(evt){
 		open = false
+		selected = evt.detail
 		setClass('leading-'+evt.detail)
 	}
 

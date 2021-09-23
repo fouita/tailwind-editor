@@ -5,25 +5,18 @@
 	
 	export let setClass
 	export let klass  = ''
-
 	let code_class  = 'code text-sm font-mono px-8 py-6 bg-gray-200'
 	let quote_class  = 'quote text-xl border-l-4 border-gray-800 px-4 font-serif'
 
-	$: text_class = (klass.includes('code')&&code_class) || (klass.includes('quote')&&quote_class) ||  klass.split(' ').find(c => c.startsWith('text')) || ''
-	$: selected_val = text_class
-
-	
-	$: selected = list.find(e => e.value==selected_val)
-	$: selected_label = (selected&&selected.label)||'Text'
 
 	let list = [
 		{
 			label:'Text Small',
-			value:'text-sm'
+			value:'md:text-sm text-sm'
 		},
 		{
 			label:'Text',
-			value:'text-base'
+			value:'md:text-base text-base'
 		},
 		{
 			label:'Code',
@@ -35,29 +28,47 @@
 		},
 		{
 			label:'Heading 1',
-			value:'text-6xl'
+			value:'md:text-6xl text-4xl'
 		},
 		{
 			label:'Heading 2',
-			value:'text-5xl'
+			value:'md:text-5xl text-3xl'
 		},
 		{
 			label:'Heading 3',
-			value:'text-4xl'
+			value:'md:text-4xl text-2xl'
 		},
 		{
 			label:'Heading 4',
-			value:'text-3xl'
+			value:'md:text-3xl text-xl'
 		},
 		{
 			label:'Heading 5',
-			value:'text-2xl'
+			value:'md:text-2xl text-xl'
 		},
 		{
 			label:'Heading 6',
-			value:'text-xl'
+			value:'md:text-xl text-lg'
 		}
 	]
+
+
+	function inList(){
+		for(let v of list){
+			if(~klass.indexOf(v.value))
+				return v.value
+		}
+		return false
+	}
+
+	$: text_class = (klass.includes('code')&&code_class) || (klass.includes('quote')&&quote_class) || inList() || ''
+	$: selected_val = text_class
+
+	
+	$: selected = list.find(e => e.value==selected_val)
+	$: selected_label = (selected&&selected.label)||'Text'
+
+	
 
 	let open = false
 	function selectClass(evt){

@@ -428,6 +428,12 @@
 					gklass +=  ' '+quote_class
 				}
 
+			}else if(reg_padding.test(klass)){
+				let reg_padd = new RegExp(`p${klass[1]}-[^\\s]+`)
+				replaceGClass(klass, reg_padd)
+			}else if(reg_margin.test(klass)){
+				let reg_mar = new RegExp(`m${klass[1]}-[^\\s]+`)
+				replaceGClass(klass, reg_mar)
 			}else if (reg_position.test(klass)){
 				replaceGClass(klass, reg_position)
 			}else if (reg_leading.test(klass)){
@@ -439,7 +445,7 @@
 		}else{
 			elm.klass = klass
 		}
-		dispatch('input')
+		dispatch('changeClass')
 	}
 	
 	function mergeArr(p_selector){
@@ -546,22 +552,18 @@
 	}
 
 	function replaceGClass(klass, reg){
-		
-		let classes = gklass.split(' ')
-		let s_index = classes.findIndex(c => reg.test(c))
-		let selected_class = ~s_index ? classes[s_index] : ''
-		if(selected_class){
-			gklass = gklass.replace(selected_class,'').trim()
-		}
-		gklass = gklass.split(' ').concat([klass]).join(' ')
-
+		gklass = gklass.replace(reg,'').replace(/\s+/,' ').trim()
+		gklass = gklass+' '+klass
 	}
 
 	
-	let reg_txt_size = /^text\-(sm|base|xl|2xl|3xl|4xl|5xl|6xl)/
-	let g_reg_txt_size = /text\-(sm|base|xl|2xl|3xl|4xl|5xl|6xl)/
-	let reg_leading = /^leading\-(none|tight|snug|normal|relaxed|loose)/
-	let reg_position = /^text\-(left|right|center)/
+	let reg_txt_size = /md:text\-(sm\stext-sm|base\stext-base|xl\stext-lg|2xl\stext-xl|3xl\stext-xl|4xl\stext-2xl|5xl\stext-3xl|6xl\stext-4xl)/
+	// duplicated, to remove!
+	let g_reg_txt_size = /md:text\-(sm\stext-sm|base\stext-base|xl\stext-lg|2xl\stext-xl|3xl\stext-xl|4xl\stext-2xl|5xl\stext-3xl|6xl\stext-4xl)/
+	let reg_leading = /leading\-(none|tight|snug|normal|relaxed|loose)/
+	let reg_position = /text\-(left|right|center)/
+	let reg_padding = /^p[lrtb]\-/
+	let reg_margin = /^m[lrtb]\-/
 	let reg_txt_color = /^text\-(gray|red|yellow|green|blue|indigo|purple|pink|white|black|transparent)/
 	let reg_bg_color = /^bg\-(gray|red|yellow|green|blue|indigo|purple|pink|white|black|transparent)/
 	const reg_font = /font\-(thin|normal|semibold|bold|black)/
@@ -570,13 +572,13 @@
 
 		if(reg_txt_color.test(klass) || reg_bg_color.test(klass)){
 			toggleColor(arr,klass)
-			dispatch('input')
+			dispatch('changeClass')
 			return
 		}
 		
 		if(reg_font.test(klass)){
 			toggleFont(arr,klass)
-			dispatch('input')
+			dispatch('changeClass')
 			return
 		}
 
@@ -607,7 +609,7 @@
 					delete elm.klass
 			}
 		}
-		dispatch('input')
+		dispatch('changeClass')
 
 	}
 

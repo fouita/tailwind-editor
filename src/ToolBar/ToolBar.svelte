@@ -5,12 +5,12 @@
 	import CodeIcon from '../Icons/CodeIcon.svelte'
 	
 	import LinkInput from './LinkInput.svelte'
-	import CenterIcon from '../Icons/CenterIcon.svelte'
-	import LeftIcon from '../Icons/LeftIcon.svelte'
-	import RightIcon from '../Icons/RightIcon.svelte'
 	import JustifyIcon from '../Icons/JustifyIcon.svelte'
 	import Leading from './Leading.svelte'
 	import HeadingList from './HeadingList.svelte'
+	import TextAlign from './TextAlign.svelte';
+	import {STYLE} from './const'
+	import Spacing from './Spacing.svelte';
 	
 	export let setClass
 	export let setGClass
@@ -23,13 +23,15 @@
 	export let mouseX
 	
 	function firstParentRelative(n){
-		while(n.parentNode && n.parentNode.tagName){
-			n = n.parentNode
-			if(window.getComputedStyle(n).getPropertyValue('position').toLowerCase() == 'relative'){
-				return n.getBoundingClientRect()
-			}
-		}
-		return {top: -window.scrollY, left: 0}
+		// Make element absolute if you want to restore this
+		// while(n.parentNode && n.parentNode.tagName){
+		// 	n = n.parentNode
+		// 	if(window.getComputedStyle(n).getPropertyValue('position').toLowerCase() == 'relative'){
+		// 		return n.getBoundingClientRect()
+		// 	}
+		// }
+		// return {top: -window.scrollY, left: 0}
+		return {top: 0, left: 0}
 	}
 
 	function setPosition(node){
@@ -75,18 +77,7 @@
 		return reg.test(classes)
 	}
 
-	const STYLE = {
-		BOLD: 'font-bold',
-		ITALIC: 'italic',
-		UNDERLINE: 'underline',
-		LINETHROUGH: 'line-through',
-		CODE: 'font-mono px-2 border border-gray-200',
-		LINK: 'underline text-blue-500 link',
-		CENTER: 'text-center',
-		LEFT: 'text-left',
-		RIGHT: 'text-right',
-		JUSTIFY: 'text-justify'
-	}
+	
 
 	let e_classes = {}
 
@@ -104,7 +95,6 @@
 			center: cgexist(STYLE.CENTER),
 			left: cgexist(STYLE.LEFT),
 			right: cgexist(STYLE.RIGHT),
-			
 		}
 	}
 	initEClasses()
@@ -146,27 +136,45 @@
 	}
 	
 	
-	// duplicated in contenteditor
+	// duplicated in contenteditor (TO UPDATE!)
 	function replaceGClass(klass, reg, gklass){
 		let classes = gklass.split(' ')
 		let s_index = classes.findIndex(c => reg.test(c))
+		// console.log({classes})
+		// console.log({reg})
+		// console.log({s_index})
 		let selected_class = ~s_index ? classes[s_index] : ''
+		// console.log({selected_class})
 		if(selected_class){
 			gklass = gklass.replace(selected_class,'').trim()
+			// console.log({gklass})
 		}
 		gklass = gklass.split(' ').concat([klass]).join(' ')
+		// console.log({gklass})
+
 		
 		return gklass
 	}
 
 	// duplicated!! 
 	const reg_position = /^text\-(left|right|center)/
+	const reg_padding = /^p[lrtb]\-/
+	const reg_margin = /^m[lrtb]\-/
 
 
 	function toggleG(klass){
 		setGClass(klass)
 		if(reg_position.test(klass)){
 			g_classes = replaceGClass(klass,reg_position,g_classes)
+
+		}else if(reg_padding.test(klass)){
+			let reg_padd = new RegExp(`^p${klass[1]}`)
+			g_classes = replaceGClass(klass,reg_padd,g_classes)
+
+		}else if(reg_margin.test(klass)){
+			let reg_mar = new RegExp(`^m${klass[1]}`)
+			g_classes = replaceGClass(klass,reg_mar,g_classes)
+
 		}else if(!g_classes.includes(klass)){
 			g_classes = g_classes.split(' ').concat([klass]).join(' ')
 		}else{
@@ -180,7 +188,7 @@
 	
 </script>
 
-<div use:setPosition on:mousedown|stopPropagation class="flex absolute font-normal -mt-6 shadow bg-white z-950 text-base rounded">	
+<div use:setPosition on:mousedown|stopPropagation class="flex fixed font-normal -mt-6 shadow bg-white z-950 text-base rounded">	
 	<div class="rounded flex items-center shadow-lg border border-gray-200  text-gray-700">
 			<div class="border-r">
 				<HeadingList setClass={setGClass} klass={g_classes} />	
@@ -215,19 +223,17 @@
 				<JustifyIcon />
 			</div>
 			
-			<div class="px-2 { e_classes.left ? 'text-blue-600':'text-gray-700'} cursor-pointer select-none hover:bg-gray-200 py-1 h-full flex items-center"  on:mousedown={() => toggleG(STYLE.LEFT)}>
-				<LeftIcon />
+			<TextAlign {e_classes} on:select={(evt) => toggleG(evt.detail)} />
+			
+			<div class="border-l h-full">
+				<Spacing mp="p" title="Padding" {g_classes} on:select={(evt) => toggleG(evt.detail)} />
+			</div>
+
+			<div class="h-full">
+				<Spacing mp="m" title="Margin" {g_classes} on:select={(evt) => toggleG(evt.detail)} />
 			</div>
 			
-			<div class="px-2 { e_classes.center ? 'text-blue-600':'text-gray-700'} cursor-pointer select-none hover:bg-gray-200 py-1 h-full flex items-center" on:mousedown={() => toggleG(STYLE.CENTER)}>
-				<CenterIcon />
-			</div>
-			
-			<div class="px-2 { e_classes.right ? 'text-blue-600':'text-gray-700'} cursor-pointer select-none hover:bg-gray-200 py-1 h-full flex items-center border-r"  on:mousedown={() => toggleG(STYLE.RIGHT)}>
-				<RightIcon />
-			</div>
-		
-			<div class="cursor-pointer select-none hover:bg-gray-200 h-full flex items-center">
+			<div class="cursor-pointer select-none hover:bg-gray-200 h-full flex items-center border-l">
 				<Leading setClass={setGClass} klass={g_classes} />
 			</div>
 			
