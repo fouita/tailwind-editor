@@ -156,7 +156,9 @@
   }
 
   function disaptchChange(){
-    dispatch('change', {uid, arr_html})
+    setTimeout(() => {
+      dispatch('change', {uid, arr_html})
+    });
   }
 
 </script>
