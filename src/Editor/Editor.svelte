@@ -73,17 +73,19 @@
   }
 
   function mergePrev(evt, i) {
-    if (i > 0) {
+    if (i > 0 && !arr_html[i-1].custom) {
       arr_html[i - 1].html += evt.detail;
       arr_html.splice(i, 1);
+      arr_html[i - 1].custom = false
       arr_html = arr_html;
     }
   }
   
   function mergeNext(evt, i) {
-    if (i+1 < arr_html.length) {
+    if (i+1 < arr_html.length && !arr_html[i+1].custom) {
       arr_html[i].html += arr_html[i+1].html;
       arr_html.splice(i+1, 1);
+      arr_html[i].custom = false
       arr_html = arr_html;
     }
   }

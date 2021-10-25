@@ -89,7 +89,11 @@
 			last_child = ['#text','BR','IMG','VIDEO'].includes(last_child.nodeName)||last_child?.dataset?.iframe ? last_child : last_child.childNodes[0] 
 			if(!last_child) return false
 			let pos = d == "up" ? last_child.textContent.length : 0
-			selection.setBaseAndExtent(last_child,  pos, last_child, pos);
+			try{
+				selection.setBaseAndExtent(last_child,  pos, last_child, pos);
+			}catch{
+				// ignore!
+			}
 		}
 
 
@@ -137,6 +141,12 @@
 
 		// del key
 		if(e.keyCode == 46){
+			if(customTxtEditor(b_node)) {
+				if(b_node?.dataset?.txteditor && !b_node?.innerHTML){
+					dispatch('merge_next', '')
+				}
+				return
+			}
 			let elms = arr_elms.length && arr_elms[arr_elms.length-1].tag == 'BR' ? arr_elms.slice(0,arr_elms.length-1) : arr_elms
 			if((!~b_index && !elms.length) || (b_node.tagName == 'DIV' && b_index==0 && start_i == elms.length) || (b_index == elms.length-1 && start_i == elms[elms.length-1].txt?.length && !selection.toString())){
 				let l_node_index 
@@ -168,6 +178,12 @@
 
 		// back key
 		if(e.keyCode == 8){
+			if(customTxtEditor(b_node)) {
+				if(b_node?.dataset?.txteditor && !b_node?.innerHTML){
+					dispatch('merge_prev', '')
+				}
+				return
+			}
 			if(start_i==0 && (b_index==0 || b_index == -1)){
 				let l_node_index 
 				let l_node_end 
@@ -193,7 +209,11 @@
 					if(l_node.nodeName !== '#text' && l_node.nodeName !== 'BR'){
 							l_node = l_node.childNodes[0]
 					}
-					selection.setBaseAndExtent(l_node, l_node_end, l_node, l_node_end);
+					try{
+						selection.setBaseAndExtent(l_node, l_node_end, l_node, l_node_end);
+					}catch{
+						// ignore!
+					}
 				}
 			}
 		}
@@ -203,6 +223,11 @@
 			let elm_html = ''
 			let next_html = ''
 			let elm_index = b_index==-1 ? arr_elms.length-1 : b_index+(b_node.tagName == 'DIV' && start_i>0 ?  start_i-1 : 0)
+
+			if(customTxtEditor(b_node)) {
+				dispatch('enter',{html: html.trim(), next_html: "", klass: gklass, target: e.currentTarget})
+				return
+			}
 
 			if(arr_elms.length>0 && ~b_index){
 				
@@ -635,7 +660,7 @@
 	function splitArr(arr, a_i, s_i, e_i){
 
 		let start = s_i
-		let end = e_i||arr[a_i]?.txt.length||arr.length+1		
+		let end = e_i||arr[a_i]?.txt?.length||arr.length+1		
 		if(e_i && e_i<s_i){
 			start = e_i 
 			end = s_i 
