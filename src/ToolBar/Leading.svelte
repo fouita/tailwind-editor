@@ -41,7 +41,7 @@
 </script>
 
 <div class="flex h-full">
-	<DropDown {list} bind:open={open} on:select={selectClass} {selected}>
+	<DropDown {list} bind:open={open} on:select={selectClass} {selected} class="text-sm">
 		<div class="pl-2 pr-3 py-1 h-full flex items-center">
 			<LineHeightIcon />
 		</div>

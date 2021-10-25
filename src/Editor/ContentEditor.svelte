@@ -9,7 +9,8 @@
 	export let html = ''
 	export let gklass = ''
 	export let editable = true
-	
+	export let custom = false
+
 	async function generateArr(){
 		let div = document.createElement('div')
 		div.innerHTML = html
@@ -29,13 +30,16 @@
 			})
 			else if(elm.dataset?.iframe)
 				n_elms.push({tag: 'IFRAME', href: elm.lastChild.getAttribute('src'), klass: elm.lastChild.classList&&[...elm.lastChild.classList].join(' ')})
-			else if(elm.nodeName !== '#text')
+			else if(elm.nodeName == 'SPAN')
 				n_elms.push({txt: elm.innerText, klass: elm.classList&&[...elm.classList].join(' ')})
-			else if(elm.nodeName == '#text' && elm.length>0 ){
+			else if(elm.nodeName !== '#text')
+				n_elms.push({htxt: `${elm.outerHTML}`, klass: elm.classList&&[...elm.classList].join(' ')})
+			else if(elm.nodeName == '#text' && elm.length>0 )
 				n_elms.push({txt: elm.textContent})
-				
-			}
+			
 		}
+
+
 		
 		arr_elms = n_elms
 		await tick()
@@ -222,6 +226,9 @@
 			let div_elm = b_node.nodeName != '#text' ? b_node.parentNode : b_node.parentNode.parentNode
 			await (new Promise(r => setTimeout(r)))
 			
+			if(customTxtEditor(div_elm)) {
+				return
+			}
 			// not in rooot
 			if(b_node.nodeName != "DIV" &&  ((b_node.parentNode && b_node.parentNode.tagName != 'DIV') || !['BR','#text'].includes(b_node.nodeName))){
 				let parent = b_node.nodeName != '#text' ? b_node : b_node.parentNode
@@ -258,6 +265,16 @@
 
 	}
 
+	function customTxtEditor(elm){
+		if(elm?.dataset?.txtcustom) {
+			return elm?.dataset?.txtcustom == "true"
+		}
+		if(elm?.parentNode){
+			return customTxtEditor(elm.parentNode)
+		}
+		return false
+	}
+
 	function extractHTML(arr){
 		let str = ''
 		arr.forEach(elm => {
@@ -265,7 +282,9 @@
 			if(elm.txt){
 				elm_txt = elm.txt.replaceAll('<','&lt;').replaceAll('>','&gt;')
 			}
-			if(elm.tag == 'BR'){
+			if(elm.htxt){
+				str += elm.htxt
+			}else if(elm.tag == 'BR'){
 				str += '<br>'
 			}else if(elm.tag == 'A'){
 				str += `<a href=${elm.href} target='_blank' class="${elm.klass}">${elm_txt}</a>`
@@ -282,7 +301,7 @@
 				}
 				str += `<div class="iframe-wrap" data-iframe="true" contenteditable="false">
 					${ed_str}
-					<iframe src=${elm.href} class="${elm.klass}" />
+					<iframe src=${elm.href} class="${elm.klass}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen />
 				</div>`	
 			}else if(elm.klass){
 				str += `<span class="${elm.klass}">${elm_txt}</span>`
@@ -616,13 +635,16 @@
 	function splitArr(arr, a_i, s_i, e_i){
 
 		let start = s_i
-		let end = e_i||arr[a_i].txt.length
+		let end = e_i||arr[a_i]?.txt.length||arr.length+1		
 		if(e_i && e_i<s_i){
 			start = e_i 
 			end = s_i 
 		}  
-		let s1 = arr[a_i].txt.slice(0,start)
-		let s2 = arr[a_i].txt.slice(start,end)
+		if(arr[a_i] && !arr[a_i].txt){
+			return [{txt: ""},{txt: "", klass: arr[a_i].klass, tag: arr[a_i].tag, href: arr[a_i].href }]
+		}
+		let s1 = arr[a_i]?.txt.slice(0,start)
+		let s2 = arr[a_i]?.txt.slice(start,end)
 		let arr1 = []
 		let i = 0
 		if(s1){
@@ -631,7 +653,7 @@
 		if(s2){
 			arr1[i++] = {txt: s2, klass: arr[a_i].klass, tag: arr[a_i].tag, href: arr[a_i].href }
 		}
-		if(e_i && arr[a_i].txt.slice(end,arr[a_i].txt.length)){
+		if(e_i && arr[a_i]?.txt.slice(end,arr[a_i].txt.length)){
 			arr1[i++] = {txt: arr[a_i].txt.slice(end,arr[a_i].txt.length), klass: arr[a_i].klass, tag: arr[a_i].tag, href: arr[a_i].href}
 		}
 		 
@@ -828,6 +850,9 @@
 			// extract classes to pass them to the toolbar!
 			let classes = extractClasses(b_index,e_index)
 			let href = extractLink(b_index,e_index)
+			if(customTxtEditor(b_node)) {
+				return
+			}
 			dispatch('select',{setClass, setGClass, base_node: b_node, classes, g_classes: gklass, href, mouseX})
 		}else{
 			embedElement(e,b_node,b_index)
@@ -847,6 +872,56 @@
 		edit_node = node
 	}
 
+	function scaleToFit(img){
+		// get the scale
+		const canvas = document.createElement('canvas')
+		const ctx = canvas.getContext('2d')
+		canvas.width = img.width
+		canvas.height = img.height
+		ctx.drawImage(img, 0,0);
+		return canvas.toDataURL("image/webp");
+	}
+
+	function pasteImg(blob){
+		return new Promise(resolve => {
+			  if (blob !== null) {
+			    let reader = new FileReader();
+			    reader.onload = function(event) {
+					const imgUrl = event.target.result
+					const img = new Image()
+					img.src = imgUrl
+					img.onload = () => {
+						let dataUrl = scaleToFit(img)
+						html = html.replace(imgUrl, dataUrl)
+					}
+			      	resolve(event.target.result)
+
+			    };
+			    reader.readAsDataURL(blob);
+			  }else{
+			  	resolve()
+			  }
+		  })
+	}
+
+	function pasteContent(event){
+		  const items = (event.clipboardData  || event.originalEvent.clipboardData).items;
+		 
+		  let blob = null;
+		  for (let i = 0; i < items.length; i++) {
+		    if (items[i].type.indexOf("image") === 0) {
+		      blob = items[i].getAsFile();
+		    }
+		  }
+		  if(blob !== null){
+			  pasteImg(blob)
+		  }else{
+			  dispatch('pasteTxt', event.srcElement)
+			  event.stopPropagation()
+		  }
+		  
+	}
+
 	$: ish1 = gklass.includes('text-6xl')
 	$: ish2 = gklass.includes('text-5xl')
 	$: ish3 = gklass.includes('text-4xl')
@@ -855,16 +930,8 @@
 	$: ish6 = gklass.includes('text-xl')
 </script>
 
-<style>
-	div[contenteditable][placeholder]:empty:before {
-		content: attr(placeholder);
-		position: absolute;
-		color: #cbd5e0;
-		background-color: transparent;
-	}
-</style>
 {#if editable}
-	<div use:setEditorNode data-txteditor="true" on:input on:blur on:mousemove={setMouseX} on:mouseup|stopPropagation bind:innerHTML={html} placeholder='' spellcheck="false" contenteditable="true" on:keydown={handleKeydown}  class="outline-none focus:outline-none relative {gklass}" on:mouseup={fireSelect} on:keyup={fireSelect}  >
+	<div use:setEditorNode data-txtcustom={custom} data-txteditor="true" on:input on:paste={pasteContent} on:blur on:mousemove={setMouseX} on:mouseup|stopPropagation bind:innerHTML={html} spellcheck="false" contenteditable="true" on:keydown={handleKeydown}  class="outline-none focus:outline-none relative {gklass}" on:mouseup={fireSelect} on:keyup={fireSelect}  >
 	</div>
 {:else}
 	{#if ish1 }
@@ -891,9 +958,11 @@
 		<h6 class="relative {gklass}" data-txteditor="true">
 			{@html html}
 		</h6>
+	{:else if !html}
+		<br>
 	{:else}
 		<div class="relative {gklass}" data-txteditor="true">
-			{@html html}
+			{@html html.replace(/<div.*Edit iframe.*?<\/div>/gs,'')}
 		</div>
 	{/if}
 {/if}

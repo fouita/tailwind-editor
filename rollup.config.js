@@ -1,5 +1,7 @@
 import svelte from 'rollup-plugin-svelte';
 import resolve from '@rollup/plugin-node-resolve';
+import { terser } from "rollup-plugin-terser";
+
 import scss from 'rollup-plugin-scss'
 import pkg from './package.json';
 
@@ -17,6 +19,7 @@ export default {
 	plugins: [
 		svelte(),
 		resolve(),
-		scss()
+		scss(),
+		terser()
 	]
 };

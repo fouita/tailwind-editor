@@ -28,7 +28,7 @@ export default {
 		// share : //youtu.be/Bo_deCOd1HU
 		// embed : //youtube.com/embed/Bo_deCOd1HU
 		
-		const re = /\/\/(?:www\.)?youtu(?:\.be|be\.com)\/(?:watch\?v=|embed\/)?([a-z0-9_\-]+)/i; 
+		const re = /\/\/(?:www\.)?youtu(?:\.be|be\.com|be-nocookie\.com)\/(?:watch\?v=|embed\/)?([a-z0-9_\-]+)/i; 
 		const matches = re.exec(str);
 		if (matches && matches[1]){
 			return 'https://www.youtube.com/embed/'+matches[1]

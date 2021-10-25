@@ -20,7 +20,7 @@
         dispatch('select', e.currentTarget.value)
     }
 
-    $: v = mp == 'p' ? 2 : 0
+    $: v = 0 // mp == 'p' ? 2 : 0
     $: pt = g_classes.split(' ').find(s => s.startsWith(`${mp}t`)) || `${mp}t-${v}`
     $: pr = g_classes.split(' ').find(s => s.startsWith(`${mp}r`)) || `${mp}r-${v}`
     $: pb = g_classes.split(' ').find(s => s.startsWith(`${mp}b`)) || `${mp}b-${v}`

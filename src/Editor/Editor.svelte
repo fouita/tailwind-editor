@@ -18,24 +18,26 @@
     // split
     // get element index
     let target = evt.detail.target
-    let index = [...target.parentNode.children].indexOf(target)
+    let pchildren = [...target.parentNode.children]
+    let index = pchildren.indexOf(target)
     arr_html.splice(
       i,
       1,
-      { html: evt.detail.html, klass: evt.detail.klass },
-      { html: evt.detail.next_html, klass: evt.detail.klass }
+      { html: evt.detail.html, klass: evt.detail.klass, custom: arr_html[i].custom },
+      { html: evt.detail.next_html, klass: '' } //evt.detail.klass
     );
     // auto focus
     arr_html = arr_html;
 	  await new Promise(r => setTimeout(r));
-	  // find next div index in cildren
-	  let div_editors = [...list_editors.children].filter(e => e.tagName == 'DIV')
+	  
+	  let div_editors = [...target.parentNode.children] //GET children again after timeout refresh!
     // next element
+   
     let j= 1;
-    while(!div_editors[index + j].getAttribute('contenteditable')){
+    while(div_editors[index + j] && !div_editors[index + j].getAttribute('contenteditable')){
       j++
     }
-    div_editors[index + j].focus();
+    div_editors[index + j]?.focus();
 
   }
 
@@ -161,6 +163,31 @@
     });
   }
 
+  async function pasteTxt(i, evt){
+    await new Promise(r => setTimeout(r))
+    let chs = evt.detail.children
+    if(chs){
+      let arr_h = []
+      for(let ch of [...chs] ){
+        if(ch.dataset.txteditor){
+          arr_h.push({html: ch.innerHTML, klass: ch.getAttribute('class')})
+        }
+      }
+      if(arr_h.length){
+        if(i < arr_html.length){
+          arr_html = arr_html.slice(0,i).concat(arr_h).concat(arr_html.slice(i+1,arr_html.length))
+        }else{
+          arr_html = arr_html.slice(0,i).concat(arr_h)
+        }
+
+      }else{
+        // wrap into a div or do nothing!
+        arr_html[i].custom = true
+        arr_html = arr_html
+      }
+    }
+  }
+
 </script>
 
 <svelte:window  on:mousedown={triggerChange} />
@@ -185,6 +212,7 @@
   {#each arr_html as h, i}
     <ContentEditor
       editable={editable}
+      custom={!!h.custom}
       bind:html={h.html}
       bind:gklass={h.klass}
       on:enter={evt => addNewElm(i, evt)}
@@ -196,6 +224,7 @@
       on:input={contentUpdated}
       on:changeClass={disaptchChange}
       on:blur={triggerUpdate}
+      on:pasteTxt={evt => pasteTxt(i,evt)}
 	   />
   {/each}
 </div>
