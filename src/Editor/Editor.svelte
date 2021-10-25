@@ -165,6 +165,8 @@
     });
   }
 
+  const SIMPLE_ELMS = ['SPAN','EM','STRONG','SMALL'] // [TODO] finish this list! 
+
   async function pasteTxt(i, evt){
     await new Promise(r => setTimeout(r))
     let chs = evt.detail.children
@@ -184,7 +186,14 @@
 
       }else{
         // wrap into a div or do nothing!
-        arr_html[i].custom = true
+        if(chs.length && !SIMPLE_ELMS.includes(chs[0].tagName)){
+          arr_html[i].custom = true
+        }
+
+        if(SIMPLE_ELMS.includes(chs?.[0]?.tagName)){
+          arr_html[i].html = chs[0].innerText
+        }
+        
         arr_html = arr_html
       }
     }
