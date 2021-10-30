@@ -17,6 +17,7 @@
 	export let classes
 	export let g_classes
 	export let href
+	export let blank
 	// export let setLink
 	export let base_node
 	let dispatch = createEventDispatcher()
@@ -209,7 +210,7 @@
 				<CodeIcon />
 			</div>
 			<div class="{ e_classes.link ? 'text-blue-600':''} cursor-pointer select-none hover:bg-gray-200 text-sm border-r">
-				<LinkInput setLink={setClass} on:close={close} {href} />
+				<LinkInput setLink={setClass} on:close={close} {href} {blank} />
 			</div>
 			
 			<div class="pl-1 cursor-pointer select-none hover:bg-gray-200 py-1 ">

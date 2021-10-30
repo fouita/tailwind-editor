@@ -1,11 +1,15 @@
 <script>
-	// import {createEventDispatcher} from 'svelte/internal'
+	
 	import List from './List.svelte'
 	let klass = ''
 	export let open = false
 	export {klass as class}
 	export let selected
-	// let dispatch = createEventDispatcher()
+	
+	$: posKlass = lNode?.getBoundingClientRect()?.bottom > window.innerHeight ? 'bottom-0 mb-8' : '' 
+
+	let lNode
+
 
 	export let list = [
 		{
@@ -52,7 +56,7 @@
 		<slot>Click To show</slot>
 	</div>
 	{#if open}
-	<div class="absolute -ml-1 z-920 {klass}">
+	<div class="absolute -ml-1 z-920 {klass} {posKlass}" bind:this={lNode}>
 		<List {list} {selected} on:select />
 	</div>
 	{/if}

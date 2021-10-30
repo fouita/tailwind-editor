@@ -1,5 +1,6 @@
 <script>
   export let href;
+  export let blank = true
   let show_link = false;
   export let setLink;
   function toggleLink(e) {
@@ -16,7 +17,7 @@
   }
 
   function addLink() {
-    setLink("underline text-blue-500 link", href);
+    setLink(`underline text-blue-500 link`, href, {blank});
     hideLink();
   }
 
@@ -53,6 +54,10 @@
         on:click={rmLink}>
         Unlink
       </button>
+      <label class="flex items-center text-black text-xs" on:click|stopPropagation>
+        <input type="checkbox" bind:checked={blank} class="mr-2" />
+        _Blank
+      </label>
     </div>
   {/if}
 </div>

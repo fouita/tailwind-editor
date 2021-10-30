@@ -7,6 +7,10 @@
 	// get color from klass
 	export let klass
 
+	$: posKlass = lNode?.getBoundingClientRect()?.bottom > window.innerHeight ? 'bottom-0 mb-8' : 'mt-8 top-0' 
+
+	let lNode
+
 	let colors = [
 		'gray','red','yellow','green','blue','indigo','purple','pink'
 	]
@@ -43,7 +47,7 @@
 		<span class="">A</span> <DownIcon />
 	</div>
 	{#if show_colors}
-		<div class="absolute top-0 left-0 mt-8 z-920 bg-white">	
+		<div class="absolute left-0 {posKlass} z-920 bg-white" bind:this={lNode}>	
 			<ColorList selected_color={selected_color} on:select={selectColor} />
 		</div>
 	{/if}

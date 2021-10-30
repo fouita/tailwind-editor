@@ -54,6 +54,7 @@
   let classes;
   let g_classes;
   let href;
+  let blank;
   let mouseX;
 
   function showToolBar(evt) {
@@ -65,6 +66,7 @@
     classes = evt.detail.classes;
     g_classes = evt.detail.g_classes;
     href = evt.detail.href;
+    blank = evt.detail.blank;
     mouseX = evt.detail.mouseX;
   }
 
@@ -165,7 +167,7 @@
     });
   }
 
-  const SIMPLE_ELMS = ['SPAN','EM','STRONG','SMALL'] // [TODO] finish this list! 
+  const SIMPLE_ELMS = ['SPAN','EM','STRONG','SMALL','h1','h2','h3','h4','h5','h6'] // [TODO] finish this list! 
 
   async function pasteTxt(i, evt){
     await new Promise(r => setTimeout(r))
@@ -211,6 +213,7 @@
     {g_classes}
     {classes}
     {href}
+    {blank}
     {mouseX}
     on:close={hideSelect} />
 {/if}
@@ -235,6 +238,7 @@
       on:input={contentUpdated}
       on:changeClass={disaptchChange}
       on:blur={triggerUpdate}
+      on:update={triggerUpdate}
       on:pasteTxt={evt => pasteTxt(i,evt)}
 	   />
   {/each}

@@ -21,7 +21,7 @@
 			if(elm.nodeName == 'BR')
 				n_elms.push({tag: 'BR',txt: ""})
 			else if(elm.nodeName == 'A')
-				n_elms.push({tag: 'A',txt: elm.textContent, href: elm.getAttribute('href'), klass: elm.classList&&[...elm.classList].join(' ')})
+				n_elms.push({tag: 'A',txt: elm.textContent, href: elm.getAttribute('href'), blank: elm.getAttribute('target')=="_blank" , klass: elm.classList&&[...elm.classList].join(' ')})
 			else if(elm.nodeName == 'IMG')
 				n_elms.push({tag: 'IMG',txt: elm.getAttribute('alt'), href: elm.getAttribute('src'), klass: elm.classList&&[...elm.classList].join(' ')})
 				else if(elm.nodeName == 'VIDEO')
@@ -312,7 +312,7 @@
 			}else if(elm.tag == 'BR'){
 				str += '<br>'
 			}else if(elm.tag == 'A'){
-				str += `<a href=${elm.href} target='_blank' class="${elm.klass}">${elm_txt}</a>`
+				str += `<a href=${elm.href} target=${elm.blank ? '_blank':'_self'} class="${elm.klass}">${elm_txt}</a>`
 			}else if(elm.tag == 'IMG'){
 				str += `<img src=${elm.href} class="${elm.klass}" alt=${elm_txt} />`
 			}else if(elm.tag == 'VIDEO'){
@@ -370,7 +370,7 @@
 	}
 	
 	 
-	async function setClass(class_name,link){
+	async function setClass(class_name,link,opts={}){
 		
 		arr_elms.forEach(e => delete e.selected)
 		let selection = window.getSelection() 
@@ -418,7 +418,7 @@
 			up_arr = up_arr.concat(n_arr.slice(1,n_arr.length-(arr2.length == 1 ? 0:1)))  
 		}
 
-		toggleClass(up_arr, class_name,link)
+		toggleClass(up_arr, class_name,link, opts)
 		up_arr.forEach(e => e.selected= true)
 		
 		arr_elms.splice(sb_index,se_index-sb_index+1,...n_arr)
@@ -612,7 +612,7 @@
 	let reg_bg_color = /^bg\-(gray|red|yellow|green|blue|indigo|purple|pink|white|black|transparent)/
 	const reg_font = /font\-(thin|normal|semibold|bold|black)/
 	
-	function toggleClass(arr, klass, link){
+	function toggleClass(arr, klass, link, opts={}){
 
 		if(reg_txt_color.test(klass) || reg_bg_color.test(klass)){
 			toggleColor(arr,klass)
@@ -631,6 +631,7 @@
 				if(elm.tag != 'BR' && link){
 						elm.tag = 'A'
 						elm.href = link
+						elm.blank = !!opts.blank
 				}
 				
 				if(!elm.klass || !elm.klass.includes(klass)){
@@ -643,12 +644,14 @@
 				if(elm.tag != "BR" && link){
 					elm.tag = 'A'
 					elm.href = link
+					elm.blank = !!opts.blank
 				}
 				if(!link && elm.tag != 'IMG' && elm.klass && elm.klass.includes('link')){
 					delete elm.href
 					delete elm.tag
 				}
-				elm.klass = (elm.klass||'')&&elm.klass.replace(klass,'').trim()
+				if(!link)
+					elm.klass = (elm.klass||'')&&elm.klass.replace(klass,'').trim()
 				if(elm.klass == '')
 					delete elm.klass
 			}
@@ -737,17 +740,19 @@
 		let arr_slice = arr_elms.slice(b_index,e_index+1)
 		
 		let href = ''
+		let blank = true
 
 		for(let i=0; i<arr_slice.length;i++){
 			// get all the common classes!
 			let elm = arr_slice[i]
 			if(elm.href){
 				href = elm.href
+				blank = elm.blank
 				break
 			}
 		}
 		
-		return href
+		return {href, blank}
 	}
 
 	
@@ -874,11 +879,11 @@
 			holdSelection(selection)
 			// extract classes to pass them to the toolbar!
 			let classes = extractClasses(b_index,e_index)
-			let href = extractLink(b_index,e_index)
+			let {href, blank} = extractLink(b_index,e_index)
 			if(customTxtEditor(b_node)) {
 				return
 			}
-			dispatch('select',{setClass, setGClass, base_node: b_node, classes, g_classes: gklass, href, mouseX})
+			dispatch('select',{setClass, setGClass, base_node: b_node, classes, g_classes: gklass, href, blank, mouseX})
 		}else{
 			embedElement(e,b_node,b_index)
 			hideSelect()
@@ -941,10 +946,20 @@
 		  if(blob !== null){
 			  pasteImg(blob)
 		  }else{
-			  dispatch('pasteTxt', event.srcElement)
+			  let src = event.path?.[0]
+			  // skib generated br
+			  if(src.tagName == "BR"){
+				  src = event.path?.[1]
+			   }
+			   dispatch('pasteTxt', src)
+			   // dispatch('pasteTxt', event.srcElement)
 			  event.stopPropagation()
 		  }
 		  
+	}
+
+	function triggerUpdate(){
+		dispatch('update')
 	}
 
 	$: ish1 = gklass.includes('text-6xl')
@@ -954,6 +969,8 @@
 	$: ish5 = gklass.includes('text-2xl')
 	$: ish6 = gklass.includes('text-xl')
 </script>
+
+<svelte:window on:mousemove={triggerUpdate} />
 
 {#if editable}
 	<div use:setEditorNode data-txtcustom={custom} data-txteditor="true" on:input on:paste={pasteContent} on:blur on:mousemove={setMouseX} on:mouseup|stopPropagation bind:innerHTML={html} spellcheck="false" contenteditable="true" on:keydown={handleKeydown}  class="outline-none focus:outline-none relative {gklass}" on:mouseup={fireSelect} on:keyup={fireSelect}  >

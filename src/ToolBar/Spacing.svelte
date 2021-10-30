@@ -11,6 +11,10 @@
     export let g_classes = ""
     export let title= "Padding"
 
+    $: posKlass = lNode?.getBoundingClientRect()?.bottom > window.innerHeight ? 'bottom-0 mb-8' : '' 
+
+	let lNode
+
     let open = false
     function toggleList(){
         open = !open
@@ -38,7 +42,7 @@
         <TriangleDown />
     </div>
     {#if open}
-        <div class="absolute shadow-xl bg-white grid grid-cols-2 w-24 p-2 gap-1 text-xs font-semibold">
+        <div class="absolute shadow-xl bg-white grid grid-cols-2 w-24 p-2 gap-1 text-xs font-semibold {posKlass}" bind:this={lNode}>
                 Top 
                 <select class="focus:outline-none border" bind:value={pt} on:change={updateP} on:blur={updateP}>
                     {#each PADDINGS as p}
