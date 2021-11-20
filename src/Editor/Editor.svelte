@@ -167,7 +167,7 @@
     });
   }
 
-  const SIMPLE_ELMS = ['SPAN','EM','STRONG','SMALL','h1','h2','h3','h4','h5','h6'] // [TODO] finish this list! 
+  const SIMPLE_ELMS =  ['SPAN','EM','STRONG','SMALL','H1','H2','H3','H4','H5','H6','P'] // [TODO] finish this list! 
 
   async function pasteTxt(i, evt){
     await new Promise(r => setTimeout(r))
@@ -177,7 +177,12 @@
       for(let ch of [...chs] ){
         if(ch.dataset.txteditor){
           arr_h.push({html: ch.innerHTML, klass: ch.getAttribute('class')})
+        }else{
+          if(!ch.children.length){
+            arr_h.push({html: ch.innerText, klass: ""})
+          }
         }
+        
       }
       if(arr_h.length){
         if(i < arr_html.length){
@@ -188,14 +193,15 @@
 
       }else{
         // wrap into a div or do nothing!
-        if(chs.length && !SIMPLE_ELMS.includes(chs[0].tagName)){
+        if(chs.length ){
           arr_html[i].custom = true
         }
 
         if(SIMPLE_ELMS.includes(chs?.[0]?.tagName)){
-          arr_html[i].html = chs[0].innerText
+          // wrap it in a div
+          arr_html[i].html = `<div>${chs[0].innerHTML}</div>`
         }
-        
+
         arr_html = arr_html
       }
     }

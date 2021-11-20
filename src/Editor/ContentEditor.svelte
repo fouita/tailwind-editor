@@ -314,7 +314,7 @@
 			}else if(elm.tag == 'A'){
 				str += `<a href=${elm.href} target=${elm.blank ? '_blank':'_self'} class="${elm.klass}">${elm_txt}</a>`
 			}else if(elm.tag == 'IMG'){
-				str += `<img src=${elm.href} class="${elm.klass}" alt=${elm_txt} />`
+				str += `<img src=${elm.href} class="${elm.klass}" alt="${elm_txt}" />`
 			}else if(elm.tag == 'VIDEO'){
 				str += `<video src=${elm.href} class="${elm.klass}" ${!!elm.opts?.loop ? 'loop':''} ${!!elm.opts?.autoplay ? 'autoplay':''} ${!!elm.opts?.muted ? 'muted':''} ${!!elm.opts?.controls ? 'controls':''} />`
 			}else if(elm.tag == 'IFRAME'){
