@@ -2,6 +2,7 @@
   import ContentEditor from "./ContentEditor.svelte";
   import ToolBar from "../ToolBar/ToolBar.svelte";
   import MediaInput from "../ToolBar/MediaInput.svelte";
+  import EditorHistory from "../lib/EditorHistory";
   import {createEventDispatcher} from 'svelte'
   import "../global.css"
   const dispatch = createEventDispatcher()
@@ -14,6 +15,9 @@
   $: html = arr_html
     .map(h => `<div class='${h.klass}'>${h.html}</div>`)
     .join("\n");
+  
+  EditorHistory.add(arr_html)
+
   async function addNewElm(i, evt) {
     // split
     // get element index
@@ -157,8 +161,16 @@
   function triggerUpdate(){
     if(updated && !show_toolbar){
         disaptchChange()
+        EditorHistory.add(arr_html)
         updated = false
     }
+  }
+    
+  function triggerUpdateClass(){
+    setTimeout(() => {
+      EditorHistory.add(arr_html)
+    });
+    disaptchChange()
   }
 
   function disaptchChange(){
@@ -166,23 +178,37 @@
       dispatch('change', {uid, arr_html})
     });
   }
+  
+  function prevHistory(){
+    arr_html = EditorHistory.prev()
+  }
+  
+  function nextHistory(){
+    arr_html = EditorHistory.next()
+  }
 
   const SIMPLE_ELMS =  ['SPAN','EM','STRONG','SMALL','H1','H2','H3','H4','H5','H6','P'] // [TODO] finish this list! 
 
   async function pasteTxt(i, evt){
     await new Promise(r => setTimeout(r))
+
     let chs = evt.detail.children
     if(chs){
       let arr_h = []
       for(let ch of [...chs] ){
-        if(ch.dataset.txteditor){
-          arr_h.push({html: ch.innerHTML, klass: ch.getAttribute('class')})
-        }else{
-          if(!ch.children.length){
-            arr_h.push({html: ch.innerText, klass: ""})
+        if(ch.dataset?.uid?.startsWith("0x")){
+          ch = ch.children[0]
+          for(let child of [...ch.children]){
+            arr_h.push({html: child.innerHTML, klass: child?.getAttribute('class')||''})
           }
-        }
+        }else if(ch.dataset.txteditor){
+            arr_h.push({html: ch.innerHTML, klass: ch.getAttribute('class')})
+        }else{
         
+            if(!ch.children.length){
+              arr_h.push({html: ch.innerText, klass: ""})
+            }
+        }
       }
       if(arr_h.length){
         if(i < arr_html.length){
@@ -196,13 +222,14 @@
         if(chs.length ){
           arr_html[i].custom = true
         }
-
+        
         if(SIMPLE_ELMS.includes(chs?.[0]?.tagName)){
           // wrap it in a div
           arr_html[i].html = `<div>${chs[0].innerHTML}</div>`
         }
-
+      
         arr_html = arr_html
+        disaptchChange()
       }
     }
   }
@@ -231,6 +258,8 @@
 <div use:setListEditors key="ed">
   {#each arr_html as h, i}
     <ContentEditor
+      on:back={prevHistory}
+      on:forward={nextHistory}
       editable={editable}
       custom={!!h.custom}
       bind:html={h.html}
@@ -242,7 +271,7 @@
       on:hideselect={hideSelect}
 	    on:set_media={setMediaInfo}
       on:input={contentUpdated}
-      on:changeClass={disaptchChange}
+      on:changeClass={triggerUpdateClass}
       on:blur={triggerUpdate}
       on:update={triggerUpdate}
       on:pasteTxt={evt => pasteTxt(i,evt)}

@@ -5,7 +5,7 @@
 	
 	export let setClass
 	export let klass  = ''
-	let code_class  = 'code text-sm font-mono px-8 py-6 bg-gray-200'
+	let code_class  = 'code text-sm font-mono px-8 py-6 bg-gray-100'
 	let quote_class  = 'quote text-xl border-l-4 border-gray-800 px-4 font-serif'
 
 

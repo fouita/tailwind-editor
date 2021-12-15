@@ -62,7 +62,19 @@
 	onMount(() => {
 		mounted = true
 		generateArr()
+		document.onselectionchange = function() {
+			window.cursor_change = +new Date
+		}
 	})
+
+
+	// let last_position
+	
+	function cursorIsSame() {
+		let l_cursor_change = +new Date
+		return l_cursor_change - window.cursor_change > 50
+	}
+
 	
 	const char_keys = ['B'.charCodeAt(0),'U'.charCodeAt(0),'I'.charCodeAt(0)]
 	async function handleKeydown(e){
@@ -71,6 +83,17 @@
 			e.preventDefault()
 			return
 		}
+
+		if(e.ctrlKey && e.keyCode == 'Z'.charCodeAt(0)){
+			dispatch('back')
+			return
+		}
+
+		if(e.ctrlKey && e.keyCode == 'Y'.charCodeAt(0)){
+			dispatch('forward')
+			return
+		}
+
 		let selection = window.getSelection()
 		let b_node = selection.anchorNode
 		let e_node = selection.focusNode
@@ -78,7 +101,11 @@
 		let end_i = selection.extentOffset
 		if(!b_node) return
 		let elm_node = (b_node?.tagName=='DIV') ? b_node : b_node.parentNode.tagName == 'DIV' ? b_node.parentNode : b_node.parentNode.parentNode
-		
+		let ed_elm = elm_node
+		while(!ed_elm?.dataset?.txteditor && ed_elm?.tagName!='HTML'){
+			ed_elm = ed_elm.parentNode
+		}
+
 		let b_index = getIndex(b_node)
 		let e_index = getIndex(e_node)
 
@@ -101,8 +128,9 @@
 		if(e.keyCode == 38){ 
 			if (b_node == e_node && start_i == 0 && (b_index <= 0)){
 				// move to the previous node
-				let pv_elm = elm_node.previousElementSibling
-				// TODO - fix workaround
+				
+				let pv_elm = ed_elm.previousElementSibling
+
 				while (pv_elm && pv_elm.previousElementSibling && !pv_elm.isContentEditable) {
 					pv_elm = pv_elm.previousElementSibling
 				}
@@ -120,10 +148,14 @@
 		if(e.keyCode == 40){ 
 			// get index
 			if (b_node == e_node){
-				// if(b_index == arr_elms.length-1 || (b_index == arr_elms.length-2 && arr_elms[arr_elms.length-1].tag == 'BR') || b_node == elm_node){
-				if(b_index == arr_elms.length-1 || ((b_index == -1 || start_i == arr_elms.length-1) && arr_elms[arr_elms.length-1].tag == 'BR')){
+				
+				await new Promise(r => setTimeout(r))
+				// if(b_index == arr_elms.length-1 || (b_index == arr_elms.length-2 && arr_elms[arr_elms.length-1].tag == 'BR') || b_node == elm_node){				
+				if((cursorIsSame() && ed_elm.dataset.txtcustom == "true") 
+					|| (ed_elm.dataset.txtcustom !== "true" && b_index >= arr_elms.length-1) 
+					|| ((b_index == -1 || start_i == arr_elms.length-1) && arr_elms[arr_elms.length-1].tag == 'BR')){
 
-					let next_elm = elm_node.nextElementSibling
+					let next_elm = ed_elm.nextElementSibling
 					
 					while (next_elm && next_elm.nextElementSibling && !next_elm.isContentEditable) {
 						next_elm = next_elm.nextElementSibling
@@ -225,6 +257,7 @@
 			let elm_index = b_index==-1 ? arr_elms.length-1 : b_index+(b_node.tagName == 'DIV' && start_i>0 ?  start_i-1 : 0)
 
 			if(customTxtEditor(b_node)) {
+				e.preventDefault()
 				dispatch('enter',{html: html.trim(), next_html: "", klass: gklass, target: e.currentTarget})
 				return
 			}
@@ -287,6 +320,9 @@
 
 
 		}
+
+		if(!e.ctrlKey && !e.shiftKey && !e.altKey)
+		dispatch('input')
 
 	}
 
@@ -581,7 +617,7 @@
 	}
 
 
-	let code_class = 'code text-sm font-mono px-8 py-6 bg-gray-200'
+	let code_class = 'code text-sm font-mono px-8 py-6 bg-gray-100'
 	let quote_class = 'quote text-xl border-l-4 border-gray-800 px-4 font-serif'
 
 
@@ -935,6 +971,7 @@
 	}
 
 	function pasteContent(event){
+		 
 		  const items = (event.clipboardData  || event.originalEvent.clipboardData).items;
 		 
 		  let blob = null;
@@ -950,10 +987,26 @@
 			  // skib generated br
 			  if(src.tagName == "BR"){
 				  src = event.path?.[1]
-			   }
-			   dispatch('pasteTxt', src)
-			   // dispatch('pasteTxt', event.srcElement)
-			  event.stopPropagation()
+			  }
+
+			if(html.trim()){
+				let clipboardData = event.clipboardData || window.clipboardData
+				let txt = clipboardData.getData('text')
+		 		event.preventDefault() 	
+				const selection = window.getSelection();
+				if (!selection.rangeCount) return false;
+				selection.deleteFromDocument();
+				selection.getRangeAt(0).insertNode(document.createTextNode(txt))
+				html = contentEditorNode.innerHTML
+				generateArr()
+				refresh()
+				dispatch('input')
+			}else{
+				dispatch('pasteTxt', src)
+			}
+
+			// dispatch('pasteTxt', event.srcElement)
+			event.stopPropagation()
 		  }
 		  
 	}
@@ -961,6 +1014,8 @@
 	function triggerUpdate(){
 		dispatch('update')
 	}
+
+	let contentEditorNode
 
 	$: ish1 = gklass.includes('text-6xl')
 	$: ish2 = gklass.includes('text-5xl')
@@ -973,7 +1028,7 @@
 <svelte:window on:mousemove={triggerUpdate} />
 
 {#if editable}
-	<div use:setEditorNode data-txtcustom={custom} data-txteditor="true" on:input on:paste={pasteContent} on:blur on:mousemove={setMouseX} on:mouseup|stopPropagation bind:innerHTML={html} spellcheck="false" contenteditable="true" on:keydown={handleKeydown}  class="outline-none focus:outline-none relative {gklass}" on:mouseup={fireSelect} on:keyup={fireSelect}  >
+	<div use:setEditorNode data-txtcustom={custom} bind:this={contentEditorNode} data-txteditor="true" on:paste={pasteContent} on:blur on:mousemove={setMouseX} on:mouseup|stopPropagation bind:innerHTML={html} spellcheck="false" contenteditable="true" on:keydown={handleKeydown}  class="outline-none focus:outline-none relative {gklass}" on:mouseup={fireSelect} on:keyup={fireSelect}  >
 	</div>
 {:else}
 	{#if ish1 }
