@@ -42,7 +42,14 @@
       j++
     }
     div_editors[index + j]?.focus();
-
+    historyChange()
+  }
+  
+  function historyChange(){
+    setTimeout(() => {
+      EditorHistory.add(arr_html)
+    });
+    disaptchChange()
   }
 
   let list_editors;
@@ -85,6 +92,7 @@
       arr_html[i - 1].custom = false
       arr_html = arr_html;
     }
+    historyChange()
   }
   
   function mergeNext(evt, i) {
@@ -94,6 +102,7 @@
       arr_html[i].custom = false
       arr_html = arr_html;
     }
+    historyChange()
   }
 
   
@@ -154,7 +163,16 @@
 
   let updated = false
 
-  function contentUpdated(){
+  function contentUpdated(evt){
+    if(evt?.detail?.currentTarget) {
+      if(!evt.detail.currentTarget.innerText){
+        // add history for first character
+        EditorHistory.add(arr_html)
+      }else{
+        // update current history
+        EditorHistory.update(arr_html)
+      }
+    }
     updated = true
   }
   
@@ -167,12 +185,9 @@
   }
     
   function triggerUpdateClass(){
-    setTimeout(() => {
-      EditorHistory.add(arr_html)
-    });
-    disaptchChange()
+    historyChange()
   }
-
+  
   function disaptchChange(){
     setTimeout(() => {
       dispatch('change', {uid, arr_html})
@@ -229,8 +244,9 @@
         }
       
         arr_html = arr_html
-        disaptchChange()
+
       }
+      historyChange()
     }
   }
 

@@ -322,7 +322,7 @@
 		}
 
 		if(!e.ctrlKey && !e.shiftKey && !e.altKey)
-		dispatch('input')
+		dispatch('input', e)
 
 	}
 
