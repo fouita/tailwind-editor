@@ -28,7 +28,9 @@
   ],
   "description": "Svelte component to generate tailwindcss html from a notion like wysiwyg editor.",
   "version": "0.1.61",
-  "dependencies": {},
+  "dependencies": {
+    "node-sass": "^7.0.1"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/fouita/tailwind-editor.git"
