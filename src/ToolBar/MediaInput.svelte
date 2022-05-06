@@ -74,7 +74,7 @@
 
 
 
-<div use:setPosition class="absolute -mt-6 p-3 shadow-xl flex flex-col rounded bg-white z-940">
+<div use:setPosition class="absolute -mt-6 p-3 shadow-xl flex flex-col rounded text-black bg-white z-940">
     {#if src}
         <input type="text" bind:value={src} placeholder="Image src" class="bg-gray-100 text-sm font-mono mb-2 border p-1 w-64 rounded-sm outline-none shadow-inner" >
     {/if}
