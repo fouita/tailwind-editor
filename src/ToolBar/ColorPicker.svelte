@@ -47,7 +47,7 @@
 		<span class="">A</span> <DownIcon />
 	</div>
 	{#if show_colors}
-		<div class="absolute left-0 {posKlass} z-920 bg-white" bind:this={lNode}>	
+		<div class="absolute left-0 {posKlass} z-20 z-920 bg-white" bind:this={lNode}>	
 			<ColorList selected_color={selected_color} on:select={selectColor} />
 		</div>
 	{/if}

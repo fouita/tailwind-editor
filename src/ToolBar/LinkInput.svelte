@@ -17,12 +17,12 @@
   }
 
   function addLink() {
-    setLink(`underline text-blue-500 link`, href, {blank});
+    setLink(`link`, href, {blank});
     hideLink();
   }
 
   function rmLink() {
-    setLink("underline text-blue-500 link", null);
+    setLink("link", null);
     hideLink();
   }
 </script>
@@ -34,7 +34,7 @@
   </span>
   {#if show_link}
     <div
-      class="absolute p-3 shadow-xl flex rounded bg-white -ml-24 mt-1 z-920"
+      class="absolute p-3 shadow-xl flex rounded bg-white -ml-24 mt-1 z-920 z-20"
       on:click={stop}>
       <input
         on:click={stop}

@@ -56,7 +56,7 @@
 		<slot>Click To show</slot>
 	</div>
 	{#if open}
-	<div class="absolute -ml-1 z-920 {klass} {posKlass}" bind:this={lNode}>
+	<div class="absolute -ml-1 z-920 z-20 {klass} {posKlass}" bind:this={lNode}>
 		<List {list} {selected} on:select />
 	</div>
 	{/if}

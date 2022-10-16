@@ -4,7 +4,7 @@
   import MediaInput from "../ToolBar/MediaInput.svelte";
   import EditorHistory from "../lib/EditorHistory";
   import {createEventDispatcher} from 'svelte'
-  import "../global.css"
+  // import "../global.css"
   const dispatch = createEventDispatcher()
 
   export let arr_html = [{ html: ``, klass: "p-2" }];

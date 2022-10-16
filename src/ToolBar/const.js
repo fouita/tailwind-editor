@@ -4,7 +4,7 @@ export const STYLE = {
     UNDERLINE: 'underline',
     LINETHROUGH: 'line-through',
     CODE: 'font-mono px-2 border border-gray-200',
-    LINK: 'underline text-blue-500 link',
+    LINK: 'link',
     CENTER: 'text-center',
     LEFT: 'text-left',
     RIGHT: 'text-right',

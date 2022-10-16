@@ -83,10 +83,12 @@
 	let e_classes = {}
 
 	const reg_font = /font\-(thin|normal|semibold|bold|black)/
+	const reg_pad = /p\-([0-4])/
 
 	function initEClasses(){
 		e_classes = {
 			bold: cregexist(reg_font),
+			padding: cregexist(reg_pad),
 			italic: cexist(STYLE.ITALIC),
 			underline: cexist(STYLE.UNDERLINE),
 			linethrough: cexist(STYLE.LINETHROUGH),
@@ -132,6 +134,30 @@
 		if(!included){
 			classes = classes.split(' ').concat(['font-bold']).join(' ').trim()
 			setClass('font-bold')
+		}
+		initEClasses()
+	}
+	
+	function togglePadding(){
+		const ps = ['0','1','2','3','4']
+		let included = false
+		for(let i=0; i< ps.length;i++){
+			console.log(classes)
+			if(classes.includes("p-"+ps[i])){
+				included = true
+				if(i+1<ps.length){
+					classes = classes.replace('p-'+ps[i],'p-'+ps[i+1]).trim()
+					setClass('p-'+ps[i+1])
+				}else{
+					classes = classes.replace('p-'+ps[i],'p-'+ps[0]).trim()
+					setClass('p-'+ps[0])
+				}
+				break;
+			}
+		}
+		if(!included){
+			classes = classes.split(' ').concat(['p-1']).join(' ').trim()
+			setClass('p-1')
 		}
 		initEClasses()
 	}
@@ -189,7 +215,7 @@
 	
 </script>
 
-<div use:setPosition on:mousedown|stopPropagation class="flex fixed font-normal -mt-6 shadow bg-white z-950 text-base rounded">	
+<div use:setPosition on:mousedown|stopPropagation class="flex fixed font-normal -mt-6 shadow bg-white z-50 z-950 text-base rounded">	
 	<div class="rounded flex items-center shadow-lg border border-gray-200  text-gray-700">
 			<div class="border-r">
 				<HeadingList setClass={setGClass} klass={g_classes} />	
@@ -205,6 +231,9 @@
 			</div>
 			<div class="px-2 cursor-pointer select-none { e_classes.linethrough ? 'text-blue-600':''} line-through hover:bg-gray-200 py-1" on:mousedown={() => toggle(STYLE.LINETHROUGH)}>
 				S
+			</div>
+			<div class="px-2 cursor-pointer select-none { e_classes.padding ? 'text-blue-600':''} font-medium hover:bg-gray-200 py-1" on:mousedown={togglePadding}>
+				P
 			</div>
 			<div class="px-2 cursor-pointer select-none { e_classes.code ? 'text-blue-600':''} line-through hover:bg-gray-200 py-2" on:mousedown={() => toggle(STYLE.CODE)}>
 				<CodeIcon />

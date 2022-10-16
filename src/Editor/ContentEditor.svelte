@@ -597,12 +597,12 @@
 
 	}
 
-	function toggleFont(arr,klass){
+	function toggleFont(arr,klass, reg=reg_font){
 
 		for(let elm of arr){
 			if(elm.klass){
 				let classes = elm.klass.split(' ')
-				let s_font_index = classes.findIndex(c => reg_font.test(c))
+				let s_font_index = classes.findIndex(c => reg.test(c))
 				let selected_font_class = ~s_font_index ? classes[s_font_index] : ''
 				if(selected_font_class){
 					// remove old selected color
@@ -618,7 +618,7 @@
 
 
 	let code_class = 'code text-sm font-mono px-8 py-6 bg-gray-100'
-	let quote_class = 'quote text-xl border-l-4 border-gray-800 px-4 font-serif'
+	let quote_class = 'quote text-xl border-l-4 border-gray-800 px-4'
 
 
 
@@ -647,6 +647,8 @@
 	let reg_txt_color = /^text\-(gray|red|yellow|green|blue|indigo|purple|pink|white|black|transparent)/
 	let reg_bg_color = /^bg\-(gray|red|yellow|green|blue|indigo|purple|pink|white|black|transparent)/
 	const reg_font = /font\-(thin|normal|semibold|bold|black)/
+	const reg_pad = /p\-([0-4])/
+
 	
 	function toggleClass(arr, klass, link, opts={}){
 
@@ -657,7 +659,13 @@
 		}
 		
 		if(reg_font.test(klass)){
-			toggleFont(arr,klass)
+			toggleFont(arr,klass, reg_font)
+			dispatch('changeClass')
+			return
+		}
+		
+		if(reg_pad.test(klass)){
+			toggleFont(arr,klass, reg_pad)
 			dispatch('changeClass')
 			return
 		}
@@ -682,7 +690,7 @@
 					elm.href = link
 					elm.blank = !!opts.blank
 				}
-				if(!link && elm.tag != 'IMG' && elm.klass && elm.klass.includes('link')){
+				if(link===null && elm.tag != 'IMG' && elm.klass && elm.klass.includes('link')){
 					delete elm.href
 					delete elm.tag
 				}
