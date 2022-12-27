@@ -24,11 +24,18 @@
     let target = evt.detail.target
     let pchildren = [...target.parentNode.children]
     let index = pchildren.indexOf(target)
+    let klass1 = evt.detail.klass?.trim(), klass2 = evt.detail.klass?.trim()
+    if(!evt.detail.html) {
+      klass1 = ''
+    }
+    if(!evt.detail.next_html) {
+      klass2 = ''
+    }
     arr_html.splice(
       i,
       1,
-      { html: evt.detail.html, klass: evt.detail.klass, custom: arr_html[i].custom },
-      { html: evt.detail.next_html, klass: '' } //evt.detail.klass
+      { html: evt.detail.html, klass: klass1, custom: arr_html[i].custom },
+      { html: evt.detail.next_html, klass: klass2 } //evt.detail.klass
     );
     // auto focus
     arr_html = arr_html;
@@ -87,7 +94,14 @@
 
   function mergePrev(evt, i) {
     if (i > 0 && !arr_html[i-1].custom) {
-      arr_html[i - 1].html += evt.detail;
+      // if empty take the class of current element!
+      let item0 = arr_html[i - 1]
+      let item1 = arr_html[i]
+      if(!item0.html) {
+        arr_html[i - 1] = {...item1}
+      } else {
+        item0.html += evt.detail;
+      }
       arr_html.splice(i, 1);
       arr_html[i - 1].custom = false
       arr_html = arr_html;
@@ -97,7 +111,13 @@
   
   function mergeNext(evt, i) {
     if (i+1 < arr_html.length && !arr_html[i+1].custom) {
-      arr_html[i].html += arr_html[i+1].html;
+      let item0 = arr_html[i]
+      let item1 = arr_html[i+1]
+      if(!item0.html) {
+        arr_html[i] = {...item1}
+      } else {
+        item0.html += item1.html;
+      }
       arr_html.splice(i+1, 1);
       arr_html[i].custom = false
       arr_html = arr_html;
@@ -128,9 +148,10 @@
 	  show_media = true
   }
 
-  function addMedia(img){
+  function addMedia(img, update=false){
     setMedia(img)
-	  show_media = false
+    if(!update)
+	    show_media = false
     disaptchChange()
   }
 
@@ -153,6 +174,7 @@
   }
 
   function triggerChange(e){
+    show_media = false
     // trigger change if click is not on the current editor
     let pEditor = getParentEditor(e.target)
     if(!pEditor || pEditor.dataset.uid !== uid){

@@ -142,7 +142,6 @@
 		const ps = ['0','1','2','3','4']
 		let included = false
 		for(let i=0; i< ps.length;i++){
-			console.log(classes)
 			if(classes.includes("p-"+ps[i])){
 				included = true
 				if(i+1<ps.length){
@@ -167,19 +166,11 @@
 	function replaceGClass(klass, reg, gklass){
 		let classes = gklass.split(' ')
 		let s_index = classes.findIndex(c => reg.test(c))
-		// console.log({classes})
-		// console.log({reg})
-		// console.log({s_index})
 		let selected_class = ~s_index ? classes[s_index] : ''
-		// console.log({selected_class})
 		if(selected_class){
 			gklass = gklass.replace(selected_class,'').trim()
-			// console.log({gklass})
 		}
 		gklass = gklass.split(' ').concat([klass]).join(' ')
-		// console.log({gklass})
-
-		
 		return gklass
 	}
 
@@ -255,9 +246,9 @@
 			
 			<TextAlign {e_classes} on:select={(evt) => toggleG(evt.detail)} />
 			
-			<div class="border-l h-full">
+			<!-- <div class="border-l h-full">
 				<Spacing mp="p" title="Padding" {g_classes} on:select={(evt) => toggleG(evt.detail)} />
-			</div>
+			</div> -->
 
 			<div class="h-full">
 				<Spacing mp="m" title="Margin" {g_classes} on:select={(evt) => toggleG(evt.detail)} />

@@ -268,6 +268,8 @@
 				arr_elms.splice(elm_index,1,...n_arr)
 				
 				let s_index = elm_index+(start_i==0 ? 0 :1)
+				const hasImg = arr_elms.find(elm => elm.tag === "IMG")
+				s_index = hasImg ? s_index+1 : s_index
 				elm_html = extractHTML(arr_elms.slice(0, s_index))
 				next_html = extractHTML(arr_elms.slice(s_index, arr_elms.length))
 			}
@@ -799,22 +801,34 @@
 		return {href, blank}
 	}
 
-	
-	
+	// this sets gklass for the float, since float need to be applied for the parent
 	function setClasses(media){
-		let zmatch = media.klass.match(/z-\d+/)
-		let z = zmatch?.[0] || ""
-		let floatmatch = media.klass.match(/float-\w+/)
-		let float = floatmatch?.[0] || ""
-		if(z){
-			gklass = gklass.replace(/z-\d+/,'')
+		// let zmatch = media.klass.match(/z-\d+/)
+		// let z = zmatch?.[0] || ""
+		// let floatmatch = media.klass.match(/float-\w+/)
+		// let float = floatmatch?.[0] || ""
+		// gklass = gklass.replace(/z-\d+/,'')
+		// gklass = gklass.replace(/float-\w+/,'')
+		// gklass += ` ${z} ${float} `
+		
+		const fclass = "flex items-start"
+		const fclassRev = "flex justify-end items-start"
+		const fclassCenter = "flex justify-center items-start"
+
+		gklass = gklass.replace(/flex.+start/,'')
+		console.log("GKLASS --> ", gklass)
+		if (media.klass.includes(fclass)) {
+			gklass += " "+fclass
 		}
-		if(float){
-			gklass = gklass.replace(/float-\w+/,'')
+		if (media.klass.includes(fclassRev)) {
+			gklass += " "+fclassRev
 		}
-		gklass += ` ${z} ${float} `
-		gklass = gklass.replace(/\s+/g,' ')
-		media.klass = media.klass.replace(/z-\d+/,'').replace(/float-\w+/,'')
+		if (media.klass.includes(fclassCenter)) {
+			gklass += " "+fclassCenter
+		}
+		gklass = gklass.replace(/\s+/g,' ').trim()
+		// media.klass = media.klass.replace(/z-\d+/,'').replace(/float-\w+/,'')
+
 	}
 
 	// embed image or video!
@@ -856,6 +870,7 @@
 		// }
 		dispatch('set_media',  {
 			setMedia: (img) => {
+				if(!img.src) return
 				setClasses(img)
 				if(img.media_type == "VIDEO"){
 					setVideo(img.klass,img.opts,img.src,i)
@@ -1039,29 +1054,29 @@
 	<div use:setEditorNode data-txtcustom={custom} bind:this={contentEditorNode} data-txteditor="true" on:paste={pasteContent} on:blur on:mousemove={setMouseX} on:mouseup|stopPropagation bind:innerHTML={html} spellcheck="false" contenteditable="true" on:keydown={handleKeydown}  class="outline-none focus:outline-none relative {gklass}" on:mouseup={fireSelect} on:keyup={fireSelect}  >
 	</div>
 {:else}
-	{#if ish1 }
+	{#if ish1}
 		<h1 class="relative {gklass}" data-txteditor="true">
-			{@html html}
+			{@html html || "&nbsp;"}
 		</h1>
-	{:else if ish2 }
+	{:else if ish2}
 		<h2 class="relative {gklass}" data-txteditor="true">
-			{@html html}
+			{@html html || "&nbsp;"}
 		</h2>
-	{:else if ish3 }
+	{:else if ish3}
 		<h3 class="relative {gklass}" data-txteditor="true">
-			{@html html}
+			{@html html || "&nbsp;"}
 		</h3>
-	{:else if ish4 }
+	{:else if ish4}
 		<h4 class="relative {gklass}" data-txteditor="true">
-			{@html html}
+			{@html html || "&nbsp;"}
 		</h4>
-	{:else if ish5 }
+	{:else if ish5}
 		<h5 class="relative {gklass}" data-txteditor="true">
-			{@html html}
+			{@html html || "&nbsp;"}
 		</h5>
-	{:else if ish6 }
+	{:else if ish6}
 		<h6 class="relative {gklass}" data-txteditor="true">
-			{@html html}
+			{@html html || "&nbsp;"}
 		</h6>
 	{:else if !html}
 		<br>
