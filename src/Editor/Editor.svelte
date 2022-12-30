@@ -272,9 +272,8 @@
     }
   }
 
+  window.__edw.addEventListener('mousedown', triggerChange)
 </script>
-
-<svelte:window  on:mousedown={triggerChange} />
 
 {#if show_toolbar && editable}
   <ToolBar

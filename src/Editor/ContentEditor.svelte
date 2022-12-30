@@ -63,7 +63,7 @@
 		mounted = true
 		generateArr()
 		document.onselectionchange = function() {
-			window.cursor_change = +new Date
+			window.__edw.cursor_change = +new Date
 		}
 	})
 
@@ -72,7 +72,7 @@
 	
 	function cursorIsSame() {
 		let l_cursor_change = +new Date
-		return l_cursor_change - window.cursor_change > 50
+		return l_cursor_change - window.__edw.cursor_change > 50
 	}
 
 	
@@ -94,7 +94,7 @@
 			return
 		}
 
-		let selection = window.getSelection()
+		let selection = window.__edw.getSelection()
 		let b_node = selection.anchorNode
 		let e_node = selection.focusNode
 		let start_i = selection.baseOffset
@@ -103,7 +103,7 @@
 		let elm_node = (b_node?.tagName=='DIV') ? b_node : b_node.parentNode.tagName == 'DIV' ? b_node.parentNode : b_node.parentNode.parentNode
 		let ed_elm = elm_node
 		while(!ed_elm?.dataset?.txteditor && ed_elm?.tagName!='HTML'){
-			ed_elm = ed_elm.parentNode
+			ed_elm = ed_elm?.parentNode
 		}
 
 		let b_index = getIndex(b_node)
@@ -411,7 +411,7 @@
 	async function setClass(class_name,link,opts={}){
 		
 		arr_elms.forEach(e => delete e.selected)
-		let selection = window.getSelection() 
+		let selection = window.__edw.getSelection() 
 		let selection_txt = selection.toString()
 
 		let	start_i = h_selection ? h_selection.start_i : selection.baseOffset 
@@ -479,10 +479,10 @@
 
 		await (new Promise(r => setTimeout(r)))
 		
-		window.getSelection().removeAllRanges();
-		window.getSelection().setBaseAndExtent(start_node, p_selector.s_start, end_node, p_selector.s_end);
+		window.__edw.getSelection().removeAllRanges();
+		window.__edw.getSelection().setBaseAndExtent(start_node, p_selector.s_start, end_node, p_selector.s_end);
 		
-		holdSelection(window.getSelection())
+		holdSelection(window.__edw.getSelection())
 
 		
 	} 
@@ -642,7 +642,7 @@
 	let reg_txt_size = /md:text\-(sm\stext-sm|base\stext-base|xl\stext-lg|2xl\stext-xl|3xl\stext-xl|4xl\stext-2xl|5xl\stext-3xl|6xl\stext-4xl)/
 	// duplicated, to remove!
 	let g_reg_txt_size = /md:text\-(sm\stext-sm|base\stext-base|xl\stext-lg|2xl\stext-xl|3xl\stext-xl|4xl\stext-2xl|5xl\stext-3xl|6xl\stext-4xl)/
-	let reg_leading = /leading\-(none|tight|snug|normal|relaxed|loose)/
+	let reg_leading = /leading\-(none|tight|snug|normal|relaxed|loose)(\smd:leading\-(none|tight|snug|normal|relaxed|loose))?/
 	let reg_position = /text\-(left|right|center)/
 	let reg_padding = /^p[lrtb]\-/
 	let reg_margin = /^m[lrtb]\-/
@@ -816,7 +816,6 @@
 		const fclassCenter = "flex justify-center items-start"
 
 		gklass = gklass.replace(/flex.+start/,'')
-		console.log("GKLASS --> ", gklass)
 		if (media.klass.includes(fclass)) {
 			gklass += " "+fclass
 		}
@@ -920,7 +919,7 @@
 	function fireSelect(e){
 		
 		 
-		let selection = window.getSelection() 
+		let selection = window.__edw.getSelection() 
 		let selection_txt = selection.toString()
 		let b_node = selection.anchorNode
 		let e_node = selection.focusNode
@@ -1013,10 +1012,10 @@
 			  }
 
 			if(html.trim()){
-				let clipboardData = event.clipboardData || window.clipboardData
+				let clipboardData = event.clipboardData || window.__edw.clipboardData
 				let txt = clipboardData.getData('text')
 		 		event.preventDefault() 	
-				const selection = window.getSelection();
+				const selection = window.__edw.getSelection();
 				if (!selection.rangeCount) return false;
 				selection.deleteFromDocument();
 				selection.getRangeAt(0).insertNode(document.createTextNode(txt))
@@ -1046,9 +1045,9 @@
 	$: ish4 = gklass.includes('text-3xl')
 	$: ish5 = gklass.includes('text-2xl')
 	$: ish6 = gklass.includes('text-xl')
-</script>
 
-<svelte:window on:mousemove={triggerUpdate} />
+	window.__edw.addEventListener('mousemove', triggerUpdate)
+</script>
 
 {#if editable}
 	<div use:setEditorNode data-txtcustom={custom} bind:this={contentEditorNode} data-txteditor="true" on:paste={pasteContent} on:blur on:mousemove={setMouseX} on:mouseup|stopPropagation bind:innerHTML={html} spellcheck="false" contenteditable="true" on:keydown={handleKeydown}  class="outline-none focus:outline-none relative {gklass}" on:mouseup={fireSelect} on:keyup={fireSelect}  >

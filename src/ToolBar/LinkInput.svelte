@@ -25,9 +25,10 @@
     setLink("link", null);
     hideLink();
   }
+  
+	window.__edw.addEventListener('click', hideLink)
 </script>
 
-<svelte:window on:click={hideLink} />
 <div class="relative" on:mousedown>
   <span class="px-2 py-1" on:click={toggleLink}>
     <span class="border-b border-gray-400">Link</span>

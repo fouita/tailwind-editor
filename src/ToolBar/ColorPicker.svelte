@@ -7,7 +7,7 @@
 	// get color from klass
 	export let klass
 
-	$: posKlass = lNode?.getBoundingClientRect()?.bottom > window.innerHeight ? 'bottom-0 mb-8' : 'mt-8 top-0' 
+	$: posKlass = lNode?.getBoundingClientRect()?.bottom > window.__edw.innerHeight ? 'bottom-0 mb-8' : 'mt-8 top-0' 
 
 	let lNode
 
@@ -39,9 +39,10 @@
 	function hideColors(){
 		show_colors= false
 	}
+
+	window.__edw.addEventListener('click', hideColors)
 </script>
 
-<svelte:window on:click={hideColors} />
 <div class="flex relative">	
 	<div class="font-medium flex items-center cursor-pointer {txt}-{selected_color} px-1" on:click={showColors}>
 		<span class="">A</span> <DownIcon />

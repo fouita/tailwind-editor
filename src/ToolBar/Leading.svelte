@@ -9,7 +9,7 @@
 	function selectClass(evt){
 		open = false
 		selected = evt.detail
-		setClass('leading-'+evt.detail)
+		setClass('leading-'+evt.detail+' md:leading-'+evt.detail)
 	}
 
 	let list = [

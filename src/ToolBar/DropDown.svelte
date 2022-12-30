@@ -6,7 +6,7 @@
 	export {klass as class}
 	export let selected
 	
-	$: posKlass = lNode?.getBoundingClientRect()?.bottom > window.innerHeight ? 'bottom-0 mb-8' : '' 
+	$: posKlass = lNode?.getBoundingClientRect()?.bottom > window.__edw.innerHeight ? 'bottom-0 mb-8' : '' 
 
 	let lNode
 
@@ -48,9 +48,9 @@
 		open = false
 	}
 	
+	window.__edw.addEventListener('click', hideList)
 </script>
 
-<svelte:window on:click={hideList} />
 <div class="relative">
 	<div class="cursor-pointer flex h-full" on:click={toggleList}>
 		<slot>Click To show</slot>

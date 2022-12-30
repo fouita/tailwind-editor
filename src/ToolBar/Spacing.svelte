@@ -11,7 +11,7 @@
     export let g_classes = ""
     export let title= "Padding"
 
-    $: posKlass = lNode?.getBoundingClientRect()?.bottom > window.innerHeight ? 'bottom-0 mb-8' : '' 
+    $: posKlass = lNode?.getBoundingClientRect()?.bottom > window.__edw.innerHeight ? 'bottom-0 mb-8' : '' 
 
 	let lNode
 

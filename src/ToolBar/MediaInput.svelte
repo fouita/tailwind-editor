@@ -112,12 +112,12 @@
                 return n.getBoundingClientRect();
             }
         }
-        return { top: -window.scrollY, left: 0 };
+        return { top: -window.__edw.scrollY, left: 0 };
     }
 
     export let base_node;
     function setPosition(node) {
-        let e = window.event;
+        let e = window.__edw.event;
         if (!base_node) return;
 
         let elm =
@@ -135,7 +135,7 @@
                 posY = rect.top ? rect.top : posY;
             }
         }
-        // node.style.top = `${posY+window.scrollY}px`
+        // node.style.top = `${posY+window.__edw.scrollY}px`
         let rel_rect = firstParentRelative(node);
         let pos_top = posY - rel_rect.top;
         if (posY < 30) pos_top = 30;
@@ -144,9 +144,9 @@
         let mx = mouseX - node.offsetWidth / 2;
         mx = mx > 0 ? mx : 10;
         mx =
-            mouseX + node.offsetWidth / 2 < window.innerWidth
+            mouseX + node.offsetWidth / 2 < window.__edw.innerWidth
                 ? mx
-                : window.innerWidth - node.offsetWidth;
+                : window.__edw.innerWidth - node.offsetWidth;
         node.style.left = `${mx - rel_rect.left}px`;
     }
 </script>
