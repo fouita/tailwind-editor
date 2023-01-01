@@ -95,6 +95,7 @@
 		}
 
 		let selection = window.__edw.getSelection()
+		let selection_txt = selection.toString()
 		let b_node = selection.anchorNode
 		let e_node = selection.focusNode
 		let start_i = selection.baseOffset
@@ -216,6 +217,7 @@
 				}
 				return
 			}
+			if(selection_txt) return
 			if(start_i==0 && (b_index==0 || b_index == -1)){
 				let l_node_index 
 				let l_node_end 
