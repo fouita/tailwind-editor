@@ -31,11 +31,19 @@
     if(!evt.detail.next_html) {
       klass2 = ''
     }
+    const arr_elms = [
+      { html: evt.detail.html, klass: klass1, custom: arr_html[i].custom },
+      { html: evt.detail.next_html, klass: klass2 } //evt.detail.klass
+    ]
+    if(evt.detail.next2_html){
+      arr_elms.push(
+        { html: evt.detail.next2_html, klass: klass2 } //evt.detail.klass
+      )
+    }
     arr_html.splice(
       i,
       1,
-      { html: evt.detail.html, klass: klass1, custom: arr_html[i].custom },
-      { html: evt.detail.next_html, klass: klass2 } //evt.detail.klass
+      ...arr_elms
     );
     // auto focus
     arr_html = arr_html;
@@ -224,7 +232,7 @@
     arr_html = EditorHistory.next()
   }
 
-  const SIMPLE_ELMS =  ['SPAN','EM','STRONG','SMALL','H1','H2','H3','H4','H5','H6','P'] // [TODO] finish this list! 
+  const SIMPLE_ELMS =  ['SPAN','EM','STRONG','SMALL','H1','H2','H3','H4','H5','H6','P','LI'] // [TODO] finish this list! 
 
   async function pasteTxt(i, evt){
     await new Promise(r => setTimeout(r))

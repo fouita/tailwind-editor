@@ -57,7 +57,7 @@
       </button>
       <label class="flex items-center text-black text-xs" on:click|stopPropagation>
         <input type="checkbox" bind:checked={blank} class="mr-2" />
-        _Blank
+        NewTab
       </label>
     </div>
   {/if}

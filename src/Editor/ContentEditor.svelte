@@ -11,7 +11,7 @@
 	export let editable = true
 	export let custom = false
 
-	async function generateArr(){
+	function getArrFromHtml(html) {
 		let div = document.createElement('div')
 		div.innerHTML = html
 		let n_elms = []
@@ -32,16 +32,26 @@
 				n_elms.push({tag: 'IFRAME', href: elm.lastChild.getAttribute('src'), klass: elm.lastChild.classList&&[...elm.lastChild.classList].join(' ')})
 			else if(elm.nodeName == 'SPAN')
 				n_elms.push({txt: elm.innerText, klass: elm.classList&&[...elm.classList].join(' ')})
+			else if(elm.nodeName == 'LI'){
+				n_elms.push({
+					tag: "LI", 
+					txt: elm.innerText, 
+					klass: elm.classList&&[...elm.classList].join(' '),
+					elms: elm.innerHTML ? getArrFromHtml(elm.innerHTML) : null
+				})
+			}
 			else if(elm.nodeName !== '#text')
 				n_elms.push({htxt: `${elm.outerHTML}`, klass: elm.classList&&[...elm.classList].join(' ')})
 			else if(elm.nodeName == '#text' && elm.length>0 )
 				n_elms.push({txt: elm.textContent})
 			
 		}
+		return n_elms
+	}
 
-
+	async function generateArr(content){
 		
-		arr_elms = n_elms
+		arr_elms = getArrFromHtml(html)
 		await tick()
 		refreshEvents()
 	}
@@ -78,7 +88,7 @@
 	
 	const char_keys = ['B'.charCodeAt(0),'U'.charCodeAt(0),'I'.charCodeAt(0)]
 	async function handleKeydown(e){
-		
+		let target = e.currentTarget 
 		if(e.ctrlKey && char_keys.includes(e.keyCode)){
 			e.preventDefault()
 			return
@@ -211,13 +221,18 @@
 
 		// back key
 		if(e.keyCode == 8){
+			
 			if(customTxtEditor(b_node)) {
 				if(b_node?.dataset?.txteditor && !b_node?.innerHTML){
 					dispatch('merge_prev', '')
 				}
 				return
 			}
+			let li_elm = b_node.tagName === "LI" ? b_node : 
+				b_node.parentNode?.tagName === "LI" ? b_node.parentNode : null
+			if(li_elm) return	
 			if(selection_txt) return
+
 			if(start_i==0 && (b_index==0 || b_index == -1)){
 				let l_node_index 
 				let l_node_end 
@@ -256,16 +271,50 @@
 		if(e.keyCode == 13 && e.shiftKey == false){
 			let elm_html = ''
 			let next_html = ''
+			let next2_html = ''
 			let elm_index = b_index==-1 ? arr_elms.length-1 : b_index+(b_node.tagName == 'DIV' && start_i>0 ?  start_i-1 : 0)
-
 			if(customTxtEditor(b_node)) {
 				e.preventDefault()
-				dispatch('enter',{html: html.trim(), next_html: "", klass: gklass, target: e.currentTarget})
+				dispatch('enter',{html: html.trim(), next_html: "<li>&nbsp;</li>", klass: gklass, target: e.currentTarget})
+				return
+			}
+
+			let li_elm = b_node.tagName === "LI" ? b_node : 
+				b_node.parentNode?.tagName === "LI" ? b_node.parentNode : null
+			
+			if(target.querySelectorAll('li').length && li_elm?.innerText?.trim() !== "") {
+				// if the keydown is not on an empty li
+				// if(b_node.innerText !== "")
+				e.preventDefault()
+				const chtml = html
+	
+				// need to know current list anchor!
+				const index_li = li_elm?.parentNode ? [...li_elm.parentNode.children].indexOf(li_elm) : -1
+				
+				let nli = document.createElement("li")
+				nli.innerHTML = "&nbsp;"
+				if(li_elm?.parentNode?.children && index_li < li_elm?.parentNode?.children.length-1) {
+					li_elm.parentNode.insertBefore(nli,li_elm.parentNode.children[index_li+1])
+				} else {
+					li_elm.parentNode.appendChild(nli)
+				}
+
+				// html += "<li>&nbsp;</li>"
+				html = li_elm.parentNode.innerHTML
+
+				setTimeout(() => {
+					const elm = target.querySelectorAll('li')[index_li+1]
+					selection.setBaseAndExtent(elm, 0, elm, 0);
+				})
+				
 				return
 			}
 
 			if(arr_elms.length>0 && ~b_index){
-				
+				if(li_elm) {
+					elm_index = li_elm?.parentNode ? [...li_elm.parentNode.children].indexOf(li_elm) : 0
+				}
+		
 				let n_arr = splitArr(arr_elms,elm_index,start_i)
 				arr_elms.splice(elm_index,1,...n_arr)
 				
@@ -274,11 +323,26 @@
 				s_index = hasImg ? s_index+1 : s_index
 				elm_html = extractHTML(arr_elms.slice(0, s_index))
 				next_html = extractHTML(arr_elms.slice(s_index, arr_elms.length))
+
+				// console.log({elm_html, next_html})
 			}
 			if(!~b_index){
 				elm_html = extractHTML(arr_elms)
 			}
-			dispatch('enter',{html: elm_html.trim(), next_html: next_html.trim(), klass: gklass, target: e.currentTarget})
+
+			// if li is empty create a div
+			if (li_elm?.innerText?.trim() === "") {
+				const index_li = li_elm?.parentNode ? [...li_elm.parentNode.children].indexOf(li_elm) : -1
+				// replace last li with div, or remove it
+				// dispatch 2 if no last li (next_html empty)
+				// dispatch 3 if there are other li (next_html empty) (next2_html other li)
+				if(index_li < li_elm.parentNode.children.length-1){
+					next2_html = next_html.trim().replace(/^<li[^>]*>[^<]*<\/li>/i, '');
+				} 
+				next_html = ""
+			}
+
+			dispatch('enter',{html: elm_html.trim(), next_html: next_html.trim(), next2_html, klass: gklass, target: e.currentTarget})
 			e.preventDefault()
 			return false
 		}
@@ -287,8 +351,8 @@
 			
 			let div_elm = b_node.nodeName != '#text' ? b_node.parentNode : b_node.parentNode.parentNode
 			await (new Promise(r => setTimeout(r)))
-			
-			if(customTxtEditor(div_elm)) {
+			// console.log("target:",target)
+			if(customTxtEditor(div_elm) || div_elm.querySelectorAll('li').length) {
 				return
 			}
 			// not in rooot
@@ -323,10 +387,20 @@
 			}
 
 
+			// if string starts with "-" transform into <li> tag
+			if(!selection_txt) {
+			}
+			
+			
 		}
-
-		if(!e.ctrlKey && !e.shiftKey && !e.altKey)
-		dispatch('input', e)
+		if(!e.ctrlKey && !e.shiftKey && !e.altKey) {
+			if(!target) return
+			// console.log(target.innerText)
+			if(target.innerHTML === '-') {
+				target.innerHTML = "<li></li>"
+			}
+			dispatch('input', e)
+		}
 
 	}
 
@@ -351,6 +425,13 @@
 				str += elm.htxt
 			}else if(elm.tag == 'BR'){
 				str += '<br>'
+			}else if(elm.tag == 'LI'){
+				// see if there are elms first, prioritize
+				let s = ""
+				if(elm.elms?.length) {
+					s += extractHTML(elm.elms)
+				}
+				str += `<li class="${elm.klass}">${s || elm_txt}</li>`
 			}else if(elm.tag == 'A'){
 				str += `<a href=${elm.href} target=${elm.blank ? '_blank':'_self'} class="${elm.klass}">${elm_txt}</a>`
 			}else if(elm.tag == 'IMG'){
@@ -374,7 +455,10 @@
 				str += elm_txt
 			}
 		})
-		return str
+		// for list
+		const regex = /<li\s*(?:class="[^"]*"\s*)*>(?:\s|&nbsp;)*<\/li>\s*$/;
+		const result = str.replace(regex, '');
+		return result
 	}
 
 	function refresh(){	
@@ -408,6 +492,63 @@
 			e_node: selection.focusNode
 		}
 	}
+
+	async function handleClassToggle(arr_obj, edit_node, edit_index=-1, class_name, link, opts={}, params) {
+		let n_arr  = arr_obj.slice(params.sb_index,params.se_index+1)
+
+		let arr1 = splitArr(n_arr,0,params.start_i, params.same_node && params.end_i)
+		 
+		let up_arr = arr1.length == 1 ? arr1 : arr1.length == 2&&(params.start_i==0||params.end_i==0) ? [arr1[0]] : [arr1[1]] 
+		
+		n_arr.splice(0,1,...arr1)
+
+		// arr_elms[params.li_index].elms = n_arr
+		
+		up_arr.forEach(e => e.selected= true)
+
+		let arr2 = []
+		if(!params.same_node){
+			arr2 = splitArr(n_arr,n_arr.length-1, params.end_i, false) 
+			n_arr.splice(n_arr.length-1,1,...arr2)
+			up_arr = up_arr.concat(n_arr.slice(1,n_arr.length-(arr2.length == 1 ? 0:1)))  
+		}
+
+		
+		// arr_elms.splice(sb_index,se_index-sb_index+1,...n_arr)
+		toggleClass(up_arr, class_name,link, opts)
+		up_arr.forEach(e => e.selected= true)
+		arr_obj.splice(params.sb_index,params.se_index-params.sb_index+1,...n_arr)
+
+		let p_selector = {}
+		if(params.li_index !== undefined) {
+			arr_elms[params.li_index].elms = mergeArr(arr_obj, p_selector)
+		} else {
+			arr_elms = mergeArr(arr_obj, p_selector)
+		}
+		// console.log({li_arr, arr_obj})
+		
+		refresh()
+
+		h_selection = null 
+
+		await tick()
+
+		let origin_node = edit_index === -1 ? edit_node : edit_node.children[edit_index]
+		let ch_nodes = [...origin_node.childNodes].filter(elm => elm.nodeName !== '#text' || (elm.nodeName == '#text' && elm.length>0))
+		
+		let start_node = ch_nodes[p_selector.a_start]
+		let end_node = ch_nodes[p_selector.a_end]
+		start_node = start_node.nodeName == '#text' ? start_node : start_node.firstChild
+		end_node = end_node.nodeName == '#text' ? end_node : end_node.firstChild
+
+		await (new Promise(r => setTimeout(r)))
+		
+		window.__edw.getSelection().removeAllRanges();
+		window.__edw.getSelection().setBaseAndExtent(start_node, p_selector.s_start, end_node, p_selector.s_end);
+		
+		holdSelection(window.__edw.getSelection())
+
+	}
 	
 	 
 	async function setClass(class_name,link,opts={}){
@@ -440,52 +581,46 @@
 		}
 		
 		let edit_node = b_node.parentNode
+		// if li, handle changes differently
+		// create an array of subelements
+
+		const params = {
+				start_i,
+				end_i,
+				b_node,
+				e_node,
+				sb_index,
+				se_index,
+				same_node,
+			}
+
+		if(edit_node?.tagName === 'LI' || edit_node?.parentNode?.tagName === 'LI') {
+			//arr_elms[b_index].tag = ""
+			//arr_elms = [arr_elms[b_index]]
+			// await (new Promise(r => setTimeout(r)))
+			let li_index = [...edit_node.parentNode.children].indexOf(edit_node)
+			if(edit_node?.parentNode?.tagName === 'LI') {
+				li_index = [...edit_node.parentNode.parentNode.children].indexOf(edit_node.parentNode)
+				edit_node = edit_node.parentNode
+			}
+			
+			params.li_index = li_index
+			let origin_div = edit_node.parentNode
+			let edit_index = [...edit_node.parentNode.children].indexOf(edit_node)
+			let liobj = arr_elms[li_index] // first element
+			// create subarray that will be used for handling elements
+			let arr_obj = liobj.elms || [{
+				txt: liobj.txt,
+				tag: "SPAN"
+			}]
+			handleClassToggle(arr_obj,origin_div, edit_index, class_name,link,opts,params)
+			return
+		}
+
 		if(b_node.parentNode.tagName !== 'DIV'){
 			edit_node = edit_node.parentNode
 		}
-		
-		let n_arr  = arr_elms.slice(sb_index,se_index+1)
-			
-		let arr1 = splitArr(n_arr,0,start_i, same_node && end_i)
-		 
-		let up_arr = arr1.length == 1 ? arr1 : arr1.length == 2&&(start_i==0||end_i==0) ? [arr1[0]] : [arr1[1]] 
-		
-		n_arr.splice(0,1,...arr1)
-		let arr2 = []
-		if(!same_node){
-			arr2 = splitArr(n_arr,n_arr.length-1, end_i, false) 
-			n_arr.splice(n_arr.length-1,1,...arr2)
-			up_arr = up_arr.concat(n_arr.slice(1,n_arr.length-(arr2.length == 1 ? 0:1)))  
-		}
-
-		toggleClass(up_arr, class_name,link, opts)
-		up_arr.forEach(e => e.selected= true)
-		
-		arr_elms.splice(sb_index,se_index-sb_index+1,...n_arr)
-
-		let p_selector = {}
-		mergeArr(p_selector)
-		
-		refresh()
-
-		h_selection = null 
-
-		await tick()
-
-		let ch_nodes = [...edit_node.childNodes].filter(elm => elm.nodeName !== '#text' || (elm.nodeName == '#text' && elm.length>0))
-		
-		let start_node = ch_nodes[p_selector.a_start]
-		let end_node = ch_nodes[p_selector.a_end]
-		start_node = start_node.nodeName == '#text' ? start_node : start_node.firstChild
-		end_node = end_node.nodeName == '#text' ? end_node : end_node.firstChild
-
-		await (new Promise(r => setTimeout(r)))
-		
-		window.__edw.getSelection().removeAllRanges();
-		window.__edw.getSelection().setBaseAndExtent(start_node, p_selector.s_start, end_node, p_selector.s_end);
-		
-		holdSelection(window.__edw.getSelection())
-
+		handleClassToggle(arr_elms, edit_node,-1,class_name,link,opts,params)
 		
 	} 
 	
@@ -532,7 +667,7 @@
 		dispatch('changeClass')
 	}
 	
-	function mergeArr(p_selector){
+	function mergeArr(arr_elms,p_selector={}){
 		let n_arr = [{...arr_elms[0]}]
 		
 		if(arr_elms[0].selected){
@@ -579,7 +714,7 @@
 			
 		}
 		
-		arr_elms = n_arr
+		return n_arr
 	}
 
 	function toggleColor(arr,klass){
@@ -602,7 +737,6 @@
 	}
 
 	function toggleFont(arr,klass, reg=reg_font){
-
 		for(let elm of arr){
 			if(elm.klass){
 				let classes = elm.klass.split(' ')
@@ -655,7 +789,6 @@
 
 	
 	function toggleClass(arr, klass, link, opts={}){
-
 		if(reg_txt_color.test(klass) || reg_bg_color.test(klass)){
 			toggleColor(arr,klass)
 			dispatch('changeClass')
@@ -673,7 +806,7 @@
 			dispatch('changeClass')
 			return
 		}
-
+		
 		if(arr.find(e => e.tag!='BR' && (!e.klass||!e.klass.includes(klass)))){
 			for(let elm of arr){
 				if(elm.tag != 'BR' && link){
@@ -740,7 +873,7 @@
 	function getIndex(node){
 		let p_node = node
 		if(!node) return -1
-		if(node.nodeName == 'DIV') {
+		if(node.nodeName == 'DIV'||node.nodeName == 'LI') {
 			p_node = node.children[0]
 			if(!p_node) return -1
 		}
@@ -753,7 +886,7 @@
 	
 	// EVENT FN
 	
-	function extractClasses(b_index,e_index){
+	function extractClasses(arr_elms,b_index,e_index){
 		if(b_index > e_index){
 			let x = b_index
 			b_index = e_index 
@@ -779,7 +912,7 @@
 		return b_class
 	}
 
-	function extractLink(b_index,e_index){
+	function extractLink(arr_elms,b_index,e_index){
 		if(b_index > e_index){
 			let x = b_index
 			b_index = e_index 
@@ -938,8 +1071,19 @@
 			let base_node = b_index < e_index ? b_node : e_node
 			holdSelection(selection)
 			// extract classes to pass them to the toolbar!
-			let classes = extractClasses(b_index,e_index)
-			let {href, blank} = extractLink(b_index,e_index)
+			let elms_arr = arr_elms
+
+			let li_elm = b_node.tagName === "LI" ? b_node : 
+				b_node.parentNode?.tagName === "LI" ? b_node.parentNode : 
+				b_node.parentNode?.parentNode?.tagName === "LI" ? b_node.parentNode.parentNode : null
+
+			if(li_elm) {
+				let li_index = [...li_elm.parentNode.children].indexOf(li_elm)
+				elms_arr = arr_elms[li_index]?.elms || [{}]
+			}
+			
+			let classes = extractClasses(elms_arr, b_index,e_index)
+			let {href, blank} = extractLink(elms_arr, b_index,e_index)
 			if(customTxtEditor(b_node)) {
 				return
 			}
