@@ -414,6 +414,19 @@
 		return false
 	}
 
+	function getStyle(klass) {
+		let txt_color = klass.replace(/.*text-\[([^\]]*)\].*/i,"$1")
+		let bg_color = klass.replace(/.*bg-\[([^\]]*)\].*/i,"$1")
+		let s = ""
+		if(txt_color) {
+			s += `color:${txt_color};`
+		}
+		if(bg_color) {
+			s += `background:${bg_color};`
+		}
+		return s
+	}
+
 	function extractHTML(arr){
 		let str = ''
 		arr.forEach(elm => {
@@ -431,9 +444,9 @@
 				if(elm.elms?.length) {
 					s += extractHTML(elm.elms)
 				}
-				str += `<li class="${elm.klass}">${s || elm_txt}</li>`
+				str += `<li class="${elm.klass}" style="${getStyle(elm.klass)}">${s || elm_txt}</li>`
 			}else if(elm.tag == 'A'){
-				str += `<a href=${elm.href} target=${elm.blank ? '_blank':'_self'} class="${elm.klass}">${elm_txt}</a>`
+				str += `<a href=${elm.href} target=${elm.blank ? '_blank':'_self'} class="${elm.klass}" style="${getStyle(elm.klass)}">${elm_txt}</a>`
 			}else if(elm.tag == 'IMG'){
 				str += `<img src=${elm.href} class="${elm.klass}" alt="${elm_txt}" />`
 			}else if(elm.tag == 'VIDEO'){
@@ -450,7 +463,7 @@
 					<iframe src=${elm.href} class="${elm.klass}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen />
 				</div>`	
 			}else if(elm.klass){
-				str += `<span class="${elm.klass}">${elm_txt}</span>`
+				str += `<span class="${elm.klass}" style="${getStyle(elm.klass)}">${elm_txt}</span>`
 			}else{
 				str += elm_txt
 			}
@@ -580,7 +593,9 @@
 			end_i = x
 		}
 		
-		let edit_node = b_node.parentNode
+		let edit_node = b_node?.parentNode ?? b_node
+
+		if(!edit_node) return
 		// if li, handle changes differently
 		// create an array of subelements
 
@@ -782,13 +797,16 @@
 	let reg_position = /text\-(left|right|center)/
 	let reg_padding = /^p[lrtb]\-/
 	let reg_margin = /^m[lrtb]\-/
-	let reg_txt_color = /^text\-(gray|red|yellow|green|blue|indigo|purple|pink|white|black|transparent)/
-	let reg_bg_color = /^bg\-(gray|red|yellow|green|blue|indigo|purple|pink|white|black|transparent)/
+	let reg_txt_color = /^text\-\[#/
+	let reg_bg_color = /^bg\-\[#/
+	// let reg_txt_color = /^text\-(gray|red|yellow|green|blue|indigo|purple|pink|white|black|transparent)/
+	// let reg_bg_color = /^bg\-(gray|red|yellow|green|blue|indigo|purple|pink|white|black|transparent)/
 	const reg_font = /font\-(thin|normal|semibold|bold|black)/
 	const reg_pad = /p\-([0-4])/
 
 	
 	function toggleClass(arr, klass, link, opts={}){
+		console.log("toggle CLASS -->", klass)
 		if(reg_txt_color.test(klass) || reg_bg_color.test(klass)){
 			toggleColor(arr,klass)
 			dispatch('changeClass')
