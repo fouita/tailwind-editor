@@ -12,12 +12,20 @@
 	import {STYLE} from './const'
 	import Spacing from './Spacing.svelte';
 	
+	// custom function from outside the editor
+	export let setColorFn
+	export let setBgColorFn
+	export let opts = {}
+	// opts color, bgColor
+	
 	export let setClass
 	export let setGClass
 	export let classes
 	export let g_classes
 	export let href
 	export let blank
+	// show basic input for a single span, no gclass
+	export let basic = false
 	// export let setLink
 	export let base_node
 	let dispatch = createEventDispatcher()
@@ -208,7 +216,7 @@
 
 <div use:setPosition on:mousedown|stopPropagation class="flex fixed font-normal -mt-6 shadow bg-white z-50 z-950 text-base rounded">	
 	<div class="rounded flex items-center shadow-lg border border-gray-200  text-gray-700">
-			<div class="border-r">
+			<div class="border-r {basic ? 'hidden':''}">
 				<HeadingList setClass={setGClass} klass={g_classes} />	
 			</div>
 			<div class="px-2 cursor-pointer select-none { e_classes.bold ? 'text-blue-600':''} font-medium hover:bg-gray-200 py-1" on:mousedown={toggleBold}>
@@ -234,27 +242,28 @@
 			</div>
 			
 			<div class="pl-1 cursor-pointer select-none hover:bg-gray-200 py-1 ">
-				<ColorPicker {setClass} klass={classes} />
+				<ColorPicker hex={opts.color} {setColorFn} {setClass} klass={classes} />
 			</div>
 			<div class="px-1 cursor-pointer select-none hover:bg-gray-200 border-r h-full flex items-center">
-				<ColorPicker txt="bg" {setClass} klass={classes} />
+				<ColorPicker hex={opts.bgColor} txt="bg" {setBgColorFn} {setClass} klass={classes} />
 			</div>
 		
-			<div class="px-2 { e_classes.justify ? 'text-blue-600':'text-gray-700'} cursor-pointer select-none hover:bg-gray-200 py-1 h-full flex items-center" on:mousedown={() => toggleG(STYLE.JUSTIFY)}>
+			<div class="px-2 {basic ? 'hidden':''} { e_classes.justify ? 'text-blue-600':'text-gray-700'} cursor-pointer select-none hover:bg-gray-200 py-1 h-full flex items-center" on:mousedown={() => toggleG(STYLE.JUSTIFY)}>
 				<JustifyIcon />
 			</div>
-			
-			<TextAlign {e_classes} on:select={(evt) => toggleG(evt.detail)} />
-			
+
+			{#if !basic}
+				<TextAlign {e_classes} on:select={(evt) => toggleG(evt.detail)} />
+			{/if}
 			<!-- <div class="border-l h-full">
 				<Spacing mp="p" title="Padding" {g_classes} on:select={(evt) => toggleG(evt.detail)} />
 			</div> -->
 
-			<div class="h-full">
+			<div class="h-full {basic ? 'hidden':''}">
 				<Spacing mp="m" title="Margin" {g_classes} on:select={(evt) => toggleG(evt.detail)} />
 			</div>
 			
-			<div class="cursor-pointer select-none hover:bg-gray-200 h-full flex items-center border-l">
+			<div class="{basic ? 'hidden':''} cursor-pointer select-none hover:bg-gray-200 h-full flex items-center border-l">
 				<Leading setClass={setGClass} klass={g_classes} />
 			</div>
 			

@@ -1,16 +1,20 @@
 <script>
 	import DownIcon from '../Icons/DownIcon.svelte'
 	
-	let hex
+	export let setColorFn
+	export let setBgColorFn
+	export let hex
 	let node
-
 
 	function displayColors(){
 		node.click()
 	}
 
 	function setColor() {
-		setClass(txt+"-["+hex+"]")
+		if(hex.startsWith("#")){
+			!setColorFn&&!setBgColorFn&&setClass(txt+"-["+hex+"]")
+			txt==="text" ? setColorFn?.(hex) : setBgColorFn?.(hex)
+		}
 	}
 
 	$:if(hex) {
@@ -23,10 +27,14 @@
 	export let klass
 
 	$: if(klass) {
+		let h = ""
 		if(txt === "text") {
-			hex = klass.replace(/.*text-\[([^\]]*)\].*/i,"$1")
+			h = klass.replace(/.*text-\[([^\]]*)\].*/i,"$1")
 		}else {
-			hex = klass.replace(/.*bg-\[([^\]]*)\].*/i,"$1")
+			h = klass.replace(/.*bg-\[([^\]]*)\].*/i,"$1")
+		}
+		if(h.startsWith("#")){
+			hex = h
 		}
 	}
 

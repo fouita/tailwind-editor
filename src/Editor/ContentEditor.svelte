@@ -286,7 +286,6 @@
 				// if the keydown is not on an empty li
 				// if(b_node.innerText !== "")
 				e.preventDefault()
-				const chtml = html
 	
 				// need to know current list anchor!
 				const index_li = li_elm?.parentNode ? [...li_elm.parentNode.children].indexOf(li_elm) : -1
@@ -296,7 +295,7 @@
 				if(li_elm?.parentNode?.children && index_li < li_elm?.parentNode?.children.length-1) {
 					li_elm.parentNode.insertBefore(nli,li_elm.parentNode.children[index_li+1])
 				} else {
-					li_elm.parentNode.appendChild(nli)
+					li_elm?.parentNode?.appendChild(nli)
 				}
 
 				// html += "<li>&nbsp;</li>"
@@ -418,10 +417,10 @@
 		let txt_color = klass.replace(/.*text-\[([^\]]*)\].*/i,"$1")
 		let bg_color = klass.replace(/.*bg-\[([^\]]*)\].*/i,"$1")
 		let s = ""
-		if(txt_color) {
+		if(txt_color?.startsWith("#")) {
 			s += `color:${txt_color};`
 		}
-		if(bg_color) {
+		if(bg_color?.startsWith("#")) {
 			s += `background:${bg_color};`
 		}
 		return s
@@ -444,7 +443,7 @@
 				if(elm.elms?.length) {
 					s += extractHTML(elm.elms)
 				}
-				str += `<li class="${elm.klass}" style="${getStyle(elm.klass)}">${s || elm_txt}</li>`
+				str += `<li class="${elm.klass}">${s || elm_txt}</li>`
 			}else if(elm.tag == 'A'){
 				str += `<a href=${elm.href} target=${elm.blank ? '_blank':'_self'} class="${elm.klass}" style="${getStyle(elm.klass)}">${elm_txt}</a>`
 			}else if(elm.tag == 'IMG'){
@@ -551,6 +550,7 @@
 		
 		let start_node = ch_nodes[p_selector.a_start]
 		let end_node = ch_nodes[p_selector.a_end]
+		if(!start_node) return
 		start_node = start_node.nodeName == '#text' ? start_node : start_node.firstChild
 		end_node = end_node.nodeName == '#text' ? end_node : end_node.firstChild
 
@@ -766,7 +766,6 @@
 				elm.klass = klass
 			}
 		}
-
 	}
 
 
@@ -806,7 +805,7 @@
 
 	
 	function toggleClass(arr, klass, link, opts={}){
-		console.log("toggle CLASS -->", klass)
+
 		if(reg_txt_color.test(klass) || reg_bg_color.test(klass)){
 			toggleColor(arr,klass)
 			dispatch('changeClass')
@@ -1171,10 +1170,11 @@
 		  }else{
 			  let src = event.path?.[0]
 			  // skib generated br
-			  if(src.tagName == "BR"){
+			  if(src?.tagName == "BR"){
 				  src = event.path?.[1]
 			  }
 
+			// DISABLING FORMATTING!
 			if(html.trim()){
 				let clipboardData = event.clipboardData || window.__edw.clipboardData
 				let txt = clipboardData.getData('text')

@@ -11,6 +11,10 @@
   export let editable = false
   export let html = "";
   export let uid = null;
+  export let basic = false
+  export let setBgColorFn
+  export let setColorFn
+  export let opts = {}
 
   $: html = arr_html
     .map(h => `<div class='${h.klass}'>${h.html}</div>`)
@@ -235,9 +239,10 @@
   const SIMPLE_ELMS =  ['SPAN','EM','STRONG','SMALL','H1','H2','H3','H4','H5','H6','P','LI'] // [TODO] finish this list! 
 
   async function pasteTxt(i, evt){
-    await new Promise(r => setTimeout(r))
 
-    let chs = evt.detail.children
+    await new Promise(r => setTimeout(r))
+    
+    let chs = evt.detail?.children
     if(chs){
       let arr_h = []
       for(let ch of [...chs] ){
@@ -285,6 +290,7 @@
 
 {#if show_toolbar && editable}
   <ToolBar
+    {basic}
     {setGClass}
     {setClass}
     {base_node}
@@ -293,6 +299,9 @@
     {href}
     {blank}
     {mouseX}
+    {setColorFn}
+    {setBgColorFn}
+    {opts}
     on:close={hideSelect} />
 {/if}
 
