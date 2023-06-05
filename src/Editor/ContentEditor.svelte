@@ -1203,12 +1203,12 @@
 
 	let contentEditorNode
 
-	$: ish1 = gklass.includes('text-6xl')
-	$: ish2 = gklass.includes('text-5xl')
-	$: ish3 = gklass.includes('text-4xl')
-	$: ish4 = gklass.includes('text-3xl')
-	$: ish5 = gklass.includes('text-2xl')
-	$: ish6 = gklass.includes('text-xl')
+	$: ish1 = (gklass??"").includes('text-6xl')
+	$: ish2 = (gklass??"").includes('text-5xl')
+	$: ish3 = (gklass??"").includes('text-4xl')
+	$: ish4 = (gklass??"").includes('text-3xl')
+	$: ish5 = (gklass??"").includes('text-2xl')
+	$: ish6 = (gklass??"").includes('text-xl')
 
 	window.__edw.addEventListener('mousemove', triggerUpdate)
 </script>

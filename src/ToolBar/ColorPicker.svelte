@@ -4,6 +4,8 @@
 	export let setColorFn
 	export let setBgColorFn
 	export let hex
+
+	let sending = false
 	let node
 
 	function displayColors(){
@@ -15,10 +17,6 @@
 			!setColorFn&&!setBgColorFn&&setClass(txt+"-["+hex+"]")
 			txt==="text" ? setColorFn?.(hex) : setBgColorFn?.(hex)
 		}
-	}
-
-	$:if(hex) {
-		setColor(hex)
 	}
 
 	export let txt = 'text'
@@ -36,6 +34,19 @@
 		if(h.startsWith("#")){
 			hex = h
 		}
+	}
+
+	function updateColor() {
+		if(sending) return
+		sending = true
+		setTimeout(() => {
+			setColor(hex)
+			sending = false
+		},400)
+	}
+
+	$: if (hex) {
+		updateColor()
 	}
 
 </script>
