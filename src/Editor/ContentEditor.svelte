@@ -1175,7 +1175,8 @@
 			  }
 
 			// DISABLING FORMATTING!
-			if(html.trim()){
+			// RESTORE PASTE TEXT (remove comments in the next section)
+			/*if(html.trim()){*/
 				let clipboardData = event.clipboardData || window.__edw.clipboardData
 				let txt = clipboardData.getData('text')
 		 		event.preventDefault() 	
@@ -1187,9 +1188,9 @@
 				generateArr()
 				refresh()
 				dispatch('input')
-			}else{
+			/*}else{
 				dispatch('pasteTxt', src)
-			}
+			}*/
 
 			// dispatch('pasteTxt', event.srcElement)
 			event.stopPropagation()
@@ -1218,33 +1219,33 @@
 	</div>
 {:else}
 	{#if ish1}
-		<h1 class="relative {gklass}" data-txteditor="true">
+		<h1 class="relative {gklass}" style="color:var(--ft-text-color) !important;" data-txteditor="true">
 			{@html html || "&nbsp;"}
 		</h1>
 	{:else if ish2}
-		<h2 class="relative {gklass}" data-txteditor="true">
+		<h2 class="relative {gklass}" style="color:var(--ft-text-color) !important;" data-txteditor="true">
 			{@html html || "&nbsp;"}
 		</h2>
 	{:else if ish3}
-		<h3 class="relative {gklass}" data-txteditor="true">
+		<h3 class="relative {gklass}" style="color:var(--ft-text-color) !important;" data-txteditor="true">
 			{@html html || "&nbsp;"}
 		</h3>
 	{:else if ish4}
-		<h4 class="relative {gklass}" data-txteditor="true">
+		<h4 class="relative {gklass}" style="color:var(--ft-text-color) !important;" data-txteditor="true">
 			{@html html || "&nbsp;"}
 		</h4>
 	{:else if ish5}
-		<h5 class="relative {gklass}" data-txteditor="true">
+		<h5 class="relative {gklass}" style="color:var(--ft-text-color) !important;" data-txteditor="true">
 			{@html html || "&nbsp;"}
 		</h5>
 	{:else if ish6}
-		<h6 class="relative {gklass}" data-txteditor="true">
+		<h6 class="relative {gklass}" style="color:var(--ft-text-color) !important;" data-txteditor="true">
 			{@html html || "&nbsp;"}
 		</h6>
 	{:else if !html}
 		<br>
 	{:else}
-		<div class="relative {gklass}" data-txteditor="true">
+		<div class="relative {gklass}" style="color:var(--ft-text-color) !important;" data-txteditor="true">
 			{@html html.replace(/<div.*Edit iframe.*?<\/div>/gs,'')}
 		</div>
 	{/if}
