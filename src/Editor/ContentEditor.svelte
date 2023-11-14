@@ -10,6 +10,7 @@
 	export let gklass = ''
 	export let editable = true
 	export let custom = false
+	export let settings = {}
 
 	function getArrFromHtml(html) {
 		let div = document.createElement('div')
@@ -1198,6 +1199,13 @@
 		  
 	}
 
+	function getId(html) {
+    	if (!html) return ``;
+		const template = document.createElement("div");
+		template.innerHTML = html;
+		return (template.innerText??"").trim().toLowerCase().replace(/[\s\t\n]+/g,'-');
+	}
+
 	function triggerUpdate(){
 		dispatch('update')
 	}
@@ -1212,40 +1220,44 @@
 	$: ish6 = (gklass??"").includes('text-xl')
 
 	window.__edw.addEventListener('mousemove', triggerUpdate)
+
+	$: style=`color:var(--ft-text-color) !important;`+(settings?.txtSize?`font-size:${settings.txtSize}px !important;`:'')
 </script>
 
 {#if editable}
-	<div use:setEditorNode data-txtcustom={custom} bind:this={contentEditorNode} data-txteditor="true" on:paste={pasteContent} on:blur on:mousemove={setMouseX} on:mouseup|stopPropagation bind:innerHTML={html} spellcheck="false" contenteditable="true" on:keydown={handleKeydown}  class="outline-none focus:outline-none relative {gklass}" on:mouseup={fireSelect} on:keyup={fireSelect}  >
+	<div use:setEditorNode data-txtcustom={custom} bind:this={contentEditorNode} data-txteditor="true" on:paste={pasteContent} on:blur on:mousemove={setMouseX} on:mouseup|stopPropagation bind:innerHTML={html} spellcheck="false" contenteditable="true" on:keydown={handleKeydown}  class="outline-none focus:outline-none relative {gklass}" on:mouseup={fireSelect} on:keyup={fireSelect} 
+	{style}
+	>
 	</div>
 {:else}
 	{#if ish1}
-		<h1 class="relative {gklass}" style="color:var(--ft-text-color) !important;" data-txteditor="true">
+		<h1 id={getId(html)} class="relative {gklass}" {style} data-txteditor="true">
 			{@html html || "&nbsp;"}
 		</h1>
 	{:else if ish2}
-		<h2 class="relative {gklass}" style="color:var(--ft-text-color) !important;" data-txteditor="true">
+		<h2 id={getId(html)} class="relative {gklass}" {style} data-txteditor="true">
 			{@html html || "&nbsp;"}
 		</h2>
 	{:else if ish3}
-		<h3 class="relative {gklass}" style="color:var(--ft-text-color) !important;" data-txteditor="true">
+		<h3 id={getId(html)} class="relative {gklass}" {style} data-txteditor="true">
 			{@html html || "&nbsp;"}
 		</h3>
 	{:else if ish4}
-		<h4 class="relative {gklass}" style="color:var(--ft-text-color) !important;" data-txteditor="true">
+		<h4 id={getId(html)} class="relative {gklass}" {style} data-txteditor="true">
 			{@html html || "&nbsp;"}
 		</h4>
 	{:else if ish5}
-		<h5 class="relative {gklass}" style="color:var(--ft-text-color) !important;" data-txteditor="true">
+		<h5 id={getId(html)} class="relative {gklass}" {style} data-txteditor="true">
 			{@html html || "&nbsp;"}
 		</h5>
 	{:else if ish6}
-		<h6 class="relative {gklass}" style="color:var(--ft-text-color) !important;" data-txteditor="true">
+		<h6 id={getId(html)} class="relative {gklass}" {style} data-txteditor="true">
 			{@html html || "&nbsp;"}
 		</h6>
 	{:else if !html}
 		<br>
 	{:else}
-		<div class="relative {gklass}" style="color:var(--ft-text-color) !important;" data-txteditor="true">
+		<div class="relative {gklass}" {style} data-txteditor="true">
 			{@html html.replace(/<div.*Edit iframe.*?<\/div>/gs,'')}
 		</div>
 	{/if}

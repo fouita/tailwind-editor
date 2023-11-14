@@ -15,6 +15,7 @@
   export let setBgColorFn
   export let setColorFn
   export let opts = {}
+  export let settings={}
 
   $: html = arr_html
     .map(h => `<div class='${h.klass}'>${h.html}</div>`)
@@ -312,6 +313,7 @@
 <div use:setListEditors key="ed">
   {#each arr_html as h, i}
     <ContentEditor
+      {settings}
       on:back={prevHistory}
       on:forward={nextHistory}
       editable={editable}
