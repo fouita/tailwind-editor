@@ -74,7 +74,7 @@
 		mounted = true
 		generateArr()
 		document.onselectionchange = function() {
-			window.__edw.cursor_change = +new Date
+			window.__ed.cursor_change = +new Date
 		}
 	})
 
@@ -83,7 +83,7 @@
 	
 	function cursorIsSame() {
 		let l_cursor_change = +new Date
-		return l_cursor_change - window.__edw.cursor_change > 50
+		return l_cursor_change - window.__ed.cursor_change > 50
 	}
 
 	
@@ -105,7 +105,7 @@
 			return
 		}
 
-		let selection = window.__edw.getSelection()
+		let selection = window.__ed.getSelection()
 		let selection_txt = selection.toString()
 		let b_node = selection.anchorNode
 		let e_node = selection.focusNode
@@ -557,10 +557,10 @@
 
 		await (new Promise(r => setTimeout(r)))
 		
-		window.__edw.getSelection().removeAllRanges();
-		window.__edw.getSelection().setBaseAndExtent(start_node, p_selector.s_start, end_node, p_selector.s_end);
+		window.__ed.getSelection().removeAllRanges();
+		window.__ed.getSelection().setBaseAndExtent(start_node, p_selector.s_start, end_node, p_selector.s_end);
 		
-		holdSelection(window.__edw.getSelection())
+		holdSelection(window.__ed.getSelection())
 
 	}
 	
@@ -568,7 +568,7 @@
 	async function setClass(class_name,link,opts={}){
 		
 		arr_elms.forEach(e => delete e.selected)
-		let selection = window.__edw.getSelection() 
+		let selection = window.__ed.getSelection() 
 		let selection_txt = selection.toString()
 
 		let	start_i = h_selection ? h_selection.start_i : selection.baseOffset 
@@ -1072,7 +1072,7 @@
 	function fireSelect(e){
 		
 		 
-		let selection = window.__edw.getSelection() 
+		let selection = window.__ed.getSelection() 
 		let selection_txt = selection.toString()
 		let b_node = selection.anchorNode
 		let e_node = selection.focusNode
@@ -1178,10 +1178,10 @@
 			// DISABLING FORMATTING!
 			// RESTORE PASTE TEXT (remove comments in the next section)
 			/*if(html.trim()){*/
-				let clipboardData = event.clipboardData || window.__edw.clipboardData
+				let clipboardData = event.clipboardData || window.__ed.clipboardData
 				let txt = clipboardData.getData('text')
 		 		event.preventDefault() 	
-				const selection = window.__edw.getSelection();
+				const selection = window.__ed.getSelection();
 				if (!selection.rangeCount) return false;
 				selection.deleteFromDocument();
 				selection.getRangeAt(0).insertNode(document.createTextNode(txt))
@@ -1219,7 +1219,7 @@
 	$: ish5 = (gklass??"").includes('text-2xl')
 	$: ish6 = (gklass??"").includes('text-xl')
 
-	window.__edw.addEventListener('mousemove', triggerUpdate)
+	window.__ed.addEventListener('mousemove', triggerUpdate)
 
 	$: style=`color:var(--ft-text-color) !important;`+(settings?.txtSize?`font-size:${settings.txtSize}px !important;`:'')
 </script>

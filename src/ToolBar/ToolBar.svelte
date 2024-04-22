@@ -35,16 +35,16 @@
 		// Make element absolute if you want to restore this
 		// while(n.parentNode && n.parentNode.tagName){
 		// 	n = n.parentNode
-		// 	if(window.__edw.getComputedStyle(n).getPropertyValue('position').toLowerCase() == 'relative'){
+		// 	if(window.__ed.getComputedStyle(n).getPropertyValue('position').toLowerCase() == 'relative'){
 		// 		return n.getBoundingClientRect()
 		// 	}
 		// }
-		// return {top: -window.__edw.scrollY, left: 0}
+		// return {top: -window.__ed.scrollY, left: 0}
 		return {top: 0, left: 0}
 	}
 
 	function setPosition(node){
-		let e = window.__edw.event;
+		let e = window.__ed.event;
 		if(!base_node) return
 		
 		let elm = base_node.parentNode.tagName == 'DIV' ? base_node : base_node.parentNode
@@ -68,7 +68,7 @@
 		mouseX = mouseX || 10
 		let mx = mouseX-node.offsetWidth/2 
 		mx = mx > 0 ? mx : 10
-		mx = mouseX+node.offsetWidth/2 < window.__edw.innerWidth ? mx : window.__edw.innerWidth-node.offsetWidth
+		mx = mouseX+node.offsetWidth/2 < window.__ed.innerWidth ? mx : window.__ed.innerWidth-node.offsetWidth
 		node.style.left = `${mx-rel_rect.left}px`
 	}
 

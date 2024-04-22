@@ -26,7 +26,7 @@
     hideLink();
   }
   
-	window.__edw.addEventListener('click', hideLink)
+	window.__ed.addEventListener('click', hideLink)
 </script>
 
 <div class="relative" on:mousedown>
