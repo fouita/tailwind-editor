@@ -109,7 +109,7 @@
 		let selection_txt = selection.toString()
 		let b_node = selection.anchorNode
 		let e_node = selection.focusNode
-		let start_i = selection.baseOffset
+		let start_i = selection.baseOffset??selection.anchorOffset
 		let end_i = selection.extentOffset
 		if(!b_node) return
 		let elm_node = (b_node?.tagName=='DIV') ? b_node : b_node.parentNode.tagName == 'DIV' ? b_node.parentNode : b_node.parentNode.parentNode
@@ -222,7 +222,7 @@
 
 		// back key
 		if(e.keyCode == 8){
-			
+
 			if(customTxtEditor(b_node)) {
 				if(b_node?.dataset?.txteditor && !b_node?.innerHTML){
 					dispatch('merge_prev', '')
@@ -233,8 +233,9 @@
 				b_node.parentNode?.tagName === "LI" ? b_node.parentNode : null
 			if(li_elm) return	
 			if(selection_txt) return
-
-			if(start_i==0 && (b_index==0 || b_index == -1)){
+			
+			// start_i == 0
+			if(!start_i && (b_index==0 || b_index == -1)){
 				let l_node_index 
 				let l_node_end 
 				let pv_elm = elm_node.previousElementSibling
@@ -498,7 +499,7 @@
 	async function holdSelection(selection){
 		if(h_selection) return
 		h_selection = {
-			start_i: selection.baseOffset ,
+			start_i: selection.baseOffset??selection.anchorOffset ,
 			end_i: selection.extentOffset ,
 			
 			b_node: selection.anchorNode,
@@ -571,7 +572,7 @@
 		let selection = window.__edw.getSelection() 
 		let selection_txt = selection.toString()
 
-		let	start_i = h_selection ? h_selection.start_i : selection.baseOffset 
+		let	start_i = h_selection ? h_selection.start_i : (selection.baseOffset??selection.anchorOffset)
 		let end_i = h_selection ? h_selection.end_i : selection.extentOffset 
 		
 		let b_node = h_selection ? h_selection.b_node : selection.anchorNode
