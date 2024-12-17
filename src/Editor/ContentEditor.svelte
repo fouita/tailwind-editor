@@ -990,7 +990,7 @@
 		if(src && src.startsWith('https')){ 
 			let is_img = await Util.testImgUrl(src.trim())
 			let is_video = Util.testVideoUrl(src.trim())
-			let iframe_vid = Util.parseYouTube(src.trim()) || Util.parseVimeo(src.trim())
+			let iframe_vid = Util.parseYouTube(src.trim()) || Util.parseVimeo(src.trim()) || Util.parseEmbed(src.trim())
 			if(is_img || is_video || iframe_vid) {
 				dispatch('set_media', {
 					setMedia: (img) => {

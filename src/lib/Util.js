@@ -43,5 +43,11 @@ export default {
 		if(matches && matches[1]) {
 			return 'https://player.vimeo.com/video/'+matches[1]
 		}
+	},
+
+	parseEmbed(str) {
+		if (str.startsWith("https://embed.fouita.com")) {
+			return str
+		}
 	}
 }

@@ -24,7 +24,7 @@
     let posClass = selectedAlign === "left" ? "flex items-start" : selectedAlign === "right" ? "flex justify-end items-start" : selectedAlign === "center" ? "flex justify-center items-start" : ""
 
     
-    let marginClass = klass.replace(/(flex.+start|w-[\w\.]+)/g,"")
+    let marginClass = klass.replace(/(flex.+start|[wh]-[\w\.]+)/g,"")
 
     function setClass() {
         klass = `${posClass} ${mheight} ${mwidth} ${marginClass}`
@@ -76,7 +76,7 @@
         let is_img = await Util.testImgUrl(src.trim());
         let is_video = Util.testVideoUrl(src.trim());
         let iframe_vid =
-            Util.parseYouTube(src.trim()) || Util.parseVimeo(src.trim());
+            Util.parseYouTube(src.trim()) || Util.parseVimeo(src.trim()) || Util.parseEmbed(src.trim());
         if (is_img || is_video || iframe_vid) {
             setMedia({
                 src: iframe_vid || src,
@@ -121,7 +121,7 @@
         if (!base_node) return;
 
         let elm =
-            base_node.parentNode.tagName == "DIV"
+            base_node?.parentNode?.tagName == "DIV"
                 ? base_node
                 : base_node.parentNode;
         let rect = elm.parentNode.getBoundingClientRect();

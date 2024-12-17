@@ -289,6 +289,10 @@
   window.__ed.addEventListener('mousedown', triggerChange)
 </script>
 
+{@html `<style>
+  .w-auto{width:auto;}.w-full{width:100%;}.w-3{width:12px;}.w-4{width:16px;}.w-10{width:40px;}.w-16{width:64px;}.w-20{width:80px;}.w-32{width:128px;}.w-40{width:160px;}.w-60{width:240px;}.w-80{width:320px;}.w-96{width:384px;}.w-128{width:512px;}.w-160{width:640px;}.w-200{width:800px;}.h-auto{height:auto;}.h-full{height:100%;}.h-3{height:12px;}.h-4{height:16px;}.h-10{height:40px;}.h-16{height:64px;}.h-20{height:80px;}.h-32{height:128px;}.h-40{height:160px;}.h-60{height:240px;}.h-80{height:320px;}.h-96{height:384px;}.h-128{height:512px;}.h-160{height:640px;}.h-200{height:800px;}
+</style>`}
+
 {#if show_toolbar && editable}
   <ToolBar
     {basic}
